@@ -1,0 +1,22 @@
+isLogadoPje() {
+                return pS(this, void 0, void 0, (function*() {
+                    try {
+                        const e = yield this.httpClient.get("/juris-backend/api/token").toPromise();
+                        return null != e.mensagem ? e.mensagem : e
+                    } catch (PC) {
+                        return
+                    }
+
+                    --------------------
+
+api do token: https://pje.trt2.jus.br/juris-backend/api/token
+
+
+api token desafio: https://pje.trt2.jus.br/juris-backend/api/documentos?tokenDesafio=64501445e3c4107f9e580c5ff31666b5cfbd0040de664747dad644abef05fa28e97eaa60ed2cb32be598cb2e023228e1506c5288992cc5f9664b57c3ea10eebb688a12a7407b594b8d5dc034d8ef55dc766528cf709f91e27695b40fec18e6fa&resposta=4b87us
+
+api tokn captcha: https://pje.trt2.jus.br/juris-backend/api/documentos?tokenCaptcha=7d532254756bd4d6030eda3b34b506ed6ccf4fac92c963074f09ca9ce9caf883
+
+api O captcha: https://pje.trt2.jus.br/juris-backend/api/captcha
+ 
+padrao de URL: https://pje.trt2.jus.br/consultaprocessual/detalhe-processo/
+padrao de URL Inteiro Teor: https://pje.trt2.jus.br/jurisprudencia/
