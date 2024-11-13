@@ -1,84 +1,69 @@
 import requests
 import json
 import re
+import os
 
-URL_TOKEN = 'https://pje.trt2.jus.br/juris-backend/api/token'
-URL_CAPTCHA = 'https://pje.trt2.jus.br/juris-backend/api/captcha'
-URL_TOKEN_CAPTCHA = 'https://pje.trt2.jus.br/juris-backend/api/documentos'
-URL_BUSCA_JURISPRUDENCIA = 'https://pje.trt2.jus.br/juris-backend/api/jurisprudencia'
-URL_CAPTCHA_TOKEN = 'https://pje.trt2.jus.br/juris-backend/api/documentos?tokenCaptcha=eed58f694dc7a573fef0cc124fd4060cd81eefab6342626ad67fddf828d01ed3'
+URL_TOKEN = os.getenv('URL_TOKEN', 'https://pje.trt2.jus.br/juris-backend/api/token')
+URL_CAPTCHA = os.getenv('URL_CAPTCHA', 'https://pje.trt2.jus.br/juris-backend/api/captcha')
+URL_BUSCA_JURISPRUDENCIA = os.getenv('URL_BUSCA_JURISPRUDENCIA', 'https://pje.trt2.jus.br/juris-backend/api/jurisprudencia')
+
+session = requests.Session()  
 
 def obter_token_inicial():
-    """Obtém o token inicial a partir da API."""
+    """Obtém o token inicial da API."""
     try:
-        response = requests.get(URL_TOKEN, timeout=10)
-        if response.status_code == 200 and 'application/json' in response.headers.get('Content-Type', ''):
+        response = session.get(URL_TOKEN, timeout=10)
+        response.raise_for_status()
+        if 'application/json' in response.headers.get('Content-Type', ''):
             token_data = response.json()
-            token = token_data.get('token')
-            if token:
-                print("Token inicial obtido:", token)
-                return token
-            else:
-                print("Erro: 'token' não encontrado na resposta.")
-        else:
-            print(f"Erro ao obter token inicial. Status Code: {response.status_code}")
+            return token_data.get('token')
     except requests.exceptions.RequestException as e:
-        print(f"Erro ao fazer requisição para obter o token: {e}")
+        print(f"Erro ao obter token inicial: {e}")
     return None
 
-def obter_token_captcha_dinamico():
-    """Obtém o token de captcha diretamente da URL fornecida."""
+def obter_token_captcha():
+    """Obtém o token de captcha via URL e resposta JSON da API."""
     try:
-        response = requests.get(URL_CAPTCHA_TOKEN, timeout=10)
-        if response.status_code == 200:
-
-            match = re.search(r'tokenCaptcha=([a-f0-9]+)', URL_CAPTCHA_TOKEN)
-            if match:
-                token_captcha = match.group(1)
-                print("Token Captcha dinâmico obtido:", token_captcha)
-                return token_captcha
-            else:
-                print("Erro: Token Captcha não encontrado na URL.")
-        else:
-            print(f"Erro ao acessar a URL do Token Captcha. Status Code: {response.status_code}")
+        response = session.get(URL_CAPTCHA, timeout=10)
+        response.raise_for_status()
+        if 'application/json' in response.headers.get('Content-Type', ''):
+            captcha_data = response.json()
+            return captcha_data.get('tokenCaptcha')
     except requests.exceptions.RequestException as e:
-        print(f"Erro ao obter o token Captcha dinâmico: {e}")
+        print(f"Erro ao obter o token Captcha: {e}")
     return None
 
-def buscar_documentos(token_captcha, token_desafio):
-    """Busca os documentos de jurisprudência com o token de captcha e desafio."""
+def buscar_documentos(token_captcha, token_desafio, pagina=0, tamanho=10):
+    """Busca documentos de jurisprudência com tokens fornecidos."""
     params = {
         "tokenDesafio": token_desafio,
         "tokenCaptcha": token_captcha,
-        "pagina": 0,
-        "tamanho": 10
+        "pagina": pagina,
+        "tamanho": tamanho
     }
     try:
-        response = requests.get(URL_BUSCA_JURISPRUDENCIA, params=params, timeout=10)
-        if response.status_code == 200 and 'application/json' in response.headers.get('Content-Type', ''):
+        response = session.get(URL_BUSCA_JURISPRUDENCIA, params=params, timeout=10)
+        response.raise_for_status()
+        if 'application/json' in response.headers.get('Content-Type', ''):
             resultados = response.json()
             print("Resultados da busca:", json.dumps(resultados, indent=2))
-        else:
-            print(f"Erro ao buscar documentos. Status Code: {response.status_code}")
     except requests.exceptions.RequestException as e:
         print(f"Erro ao buscar documentos: {e}")
 
 def executar_busca():
-    """Função principal para executar a busca completa, desde a obtenção do token até a consulta de jurisprudência."""
+    """Execução completa da busca de jurisprudência."""
     print("Iniciando busca de jurisprudência...")
-
-
     token_inicial = obter_token_inicial()
     if not token_inicial:
+        print("Token inicial não foi obtido.")
         return
 
-    token_captcha = obter_token_captcha_dinamico()
+    token_captcha = obter_token_captcha()
     if not token_captcha:
+        print("Token Captcha não foi obtido.")
         return
 
-
-    token_desafio = "64501445e3c4107f9e580c5ff31666b5cfbd0040de664747dad644abef05fa28e97eaa60ed2cb32be598cb2e023228e1506c5288992cc5f9664b57c3ea10eebb688a12a7407b594b8d5dc034d8ef55dc766528cf709f91e27695b40fec18e6fa"
-
+    token_desafio = "748e98f6b97f17eebc82d7c8e348ef38840bc1345f5011cea2c2971285ba248b"
     buscar_documentos(token_captcha, token_desafio)
 
 if __name__ == "__main__":
