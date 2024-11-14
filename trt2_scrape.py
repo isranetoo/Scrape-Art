@@ -10,26 +10,26 @@ import time
 import json
 from urllib.parse import urlparse, parse_qs
 
-BASE_URL = 'https://pje.trt2.jus.br/jurisprudencia/'
+URL_BASE = 'https://pje.trt2.jus.br/jurisprudencia/'
 URL_DOCUMENTOS = 'https://pje.trt2.jus.br/juris-backend/api/documentos'
 URL_TOKEN = 'https://pje.trt2.jus.br/juris-backend/api/token'
 
-class JurisprudenciaSession:
+class SessaoJurisprudencia:
     def __init__(self):
         self.browser = None
-        self.session = requests.Session()
-        self.challenge_token = None
-        self.captcha_response = None
+        self.sessao = requests.Session()
+        self.token_desafio = None
+        self.resposta_captcha = None
 
-    def setup_browser(self):
-        """Setup Chrome browser with appropriate options"""
-        options = webdriver.ChromeOptions()
+    def configurar_browser(self):
+        """Configurar o navegador Chrome com as opções apropriadas"""
+        opcoes = webdriver.ChromeOptions()
         
-        options.add_argument('--start-maximized')
-        options.add_argument('--ignore-certificate-errors')
-        options.add_argument('--ignore-ssl-errors')
+        opcoes.add_argument('--start-maximized')
+        opcoes.add_argument('--ignore-certificate-errors')
+        opcoes.add_argument('--ignore-ssl-errors')
         
-        options.set_capability(
+        opcoes.set_capability(
             "goog:loggingPrefs",
             {
                 "browser": "ALL",
@@ -37,134 +37,134 @@ class JurisprudenciaSession:
             }
         )
         
-        service = Service(ChromeDriverManager().install())
+        servico = Service(ChromeDriverManager().install())
         
         try:
             self.browser = webdriver.Chrome(
-                service=service,
-                options=options
+                service=servico,
+                options=opcoes
             )
-            print("Browser setup successful")
+            print("Configuração do navegador bem-sucedida")
         except Exception as e:
-            print(f"Error setting up browser: {e}")
+            print(f"Erro ao configurar o navegador: {e}")
             raise
 
-    def get_network_requests(self):
-        """Get all network requests containing 'tokenDesafio'"""
+    def obter_requisicoes_rede(self):
+        """Obter todas as requisições de rede contendo 'tokenDesafio'"""
         try:
             logs = self.browser.get_log('performance')
-            for entry in logs:
-                log_data = json.loads(entry.get('message', {}))
-                message = log_data.get('message', {})
-                if message.get('method') == 'Network.requestWillBeSent':
-                    request = message.get('params', {}).get('request', {})
-                    url = request.get('url', '')
+            for entrada in logs:
+                dados_log = json.loads(entrada.get('message', {}))
+                mensagem = dados_log.get('message', {})
+                if mensagem.get('method') == 'Network.requestWillBeSent':
+                    requisicao = mensagem.get('params', {}).get('request', {})
+                    url = requisicao.get('url', '')
                     if 'tokenDesafio' in url:
-                        print(f"Found token URL: {url}")
+                        print(f"URL de token encontrado: {url}")
                         return url
         except Exception as e:
-            print(f"Error getting network requests: {e}")
+            print(f"Erro ao obter requisições de rede: {e}")
         return None
 
-    def wait_for_token_in_page(self, timeout=30):
-        """Wait and extract token from page source or network requests"""
-        start_time = time.time()
-        while time.time() - start_time < timeout:
+    def aguardar_token_na_pagina(self, timeout=30):
+        """Aguardar e extrair o token da página ou das requisições de rede"""
+        inicio = time.time()
+        while time.time() - inicio < timeout:
             try:
-                page_source = self.browser.page_source
-                if 'tokenDesafio' in page_source:
-                    print("Found token in page source")
+                fonte_pagina = self.browser.page_source
+                if 'tokenDesafio' in fonte_pagina:
+                    print("Token encontrado na fonte da página")
                 
-                token_url = self.get_network_requests()
-                if token_url:
-                    parsed = urlparse(token_url)
-                    params = parse_qs(parsed.query)
-                    if 'tokenDesafio' in params:
-                        return params['tokenDesafio'][0]
+                url_token = self.obter_requisicoes_rede()
+                if url_token:
+                    analisado = urlparse(url_token)
+                    parametros = parse_qs(analisado.query)
+                    if 'tokenDesafio' in parametros:
+                        return parametros['tokenDesafio'][0]
                 
                 time.sleep(1)
             except Exception as e:
-                print(f"Error while waiting for token: {e}")
+                print(f"Erro ao aguardar pelo token: {e}")
         
-        print("Timeout waiting for token")
+        print("Tempo esgotado aguardando pelo token")
         return None
 
-    def make_request_with_headers(self, url):
-        """Make request with proper headers"""
-        headers = {
+    def fazer_requisicao_com_headers(self, url):
+        """Fazer uma requisição com os cabeçalhos adequados"""
+        cabecalhos = {
             'Accept': 'application/json, text/plain, */*',
-            'Accept-Language': 'en-US,en;q=0.9',
+            'Accept-Language': 'pt-BR,pt;q=0.9',
             'Connection': 'keep-alive',
-            'Referer': BASE_URL,
+            'Referer': URL_BASE,
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
         }
         
         try:
-            response = self.session.get(url, headers=headers)
-            print(f"\nRequest URL: {url}")
-            print(f"Response Status: {response.status_code}")
-            print(f"Response Headers: {dict(response.headers)}")
-            print(f"Response Content: {response.text[:500]}")
-            return response
+            resposta = self.sessao.get(url, headers=cabecalhos)
+            print(f"\nURL de Requisição: {url}")
+            print(f"Status da Resposta: {resposta.status_code}")
+            print(f"Cabeçalhos da Resposta: {dict(resposta.headers)}")
+            print(f"Conteúdo da Resposta: {resposta.text[:500]}")
+            return resposta
         except Exception as e:
-            print(f"Error making request: {e}")
+            print(f"Erro ao fazer a requisição: {e}")
             return None
 
-    def start_session(self):
-        """Start the browser session and handle token/captcha process"""
+    def iniciar_sessao(self):
+        """Iniciar a sessão no navegador e lidar com o processo de token/captcha"""
         try:
-            print("Starting new session...")
-            self.setup_browser()
+            print("Iniciando nova sessão...")
+            self.configurar_browser()
             
-            print("Loading page...")
-            self.browser.get(BASE_URL)
-            time.sleep(5) 
+            print("Carregando a página...")
+            self.browser.get(URL_BASE)
+            time.sleep(5)
             
-            print("\nExtracting cookies...")
+            print("\nExtraindo cookies...")
             cookies = self.browser.get_cookies()
             for cookie in cookies:
                 print(f"Cookie: {cookie['name']} = {cookie['value']}")
-                self.session.cookies.set(cookie['name'], cookie['value'])
+                self.sessao.cookies.set(cookie['name'], cookie['value'])
             
-            print("\nWaiting for token to appear...")
-            self.challenge_token = self.wait_for_token_in_page()
-            if self.challenge_token:
-                print(f"\nExtracted token: {self.challenge_token}")
+            print("\nAguardando o token aparecer...")
+            self.token_desafio = self.aguardar_token_na_pagina()
+            if self.token_desafio:
+                print(f"\nToken extraído: {self.token_desafio}")
             else:
-                print("\nFailed to extract token")
+                print("\nFalha ao extrair o token")
                 return
 
-            print("\nPlease enter the captcha solution you see in the browser.")
-            print("The format should be like 'k8fe6w' (6 characters)")
-            self.captcha_response = input("Enter captcha solution: ").strip()
+            print("\nPor favor, insira a solução do captcha que você vê no navegador.")
+            print("O formato deve ser algo como 'k8fe6w' (6 caracteres)")
+            self.resposta_captcha = input("Insira a solução do captcha: ").strip()
             
-            if self.challenge_token and self.captcha_response:
-                final_url = f"{URL_DOCUMENTOS}?tokenDesafio={self.challenge_token}&resposta={self.captcha_response}"
-                print(f"\nMaking request with URL: {final_url}")
-                response = self.make_request_with_headers(final_url)
+            if self.token_desafio and self.resposta_captcha:
+                url_final = f"{URL_DOCUMENTOS}?tokenDesafio={self.token_desafio}&resposta={self.resposta_captcha}"
+                print(f"\nFazendo requisição com URL: {url_final}")
+                resposta = self.fazer_requisicao_com_headers(url_final)
             
-                with open("token_response.txt", "w") as file:
-                    file.write(f"Token: {self.challenge_token}\n")
-                    file.write(f"Captcha Response: {self.captcha_response}\n")
-                    if response:
-                        file.write(f"Response Status: {response.status_code}\n")
-                        file.write("Response Headers:\n")
-                        file.write(json.dumps(dict(response.headers), indent=2) + "\n")
-                        file.write("Response Content:\n")
-                        file.write(response.text[:500] + "\n")  
+                with open("resposta_token.txt", "w") as arquivo:
+                    arquivo.write(f"Token: {self.token_desafio}\n")
+                    arquivo.write(f"Resposta do Captcha: {self.resposta_captcha}\n")
+                    if resposta:
+                        arquivo.write(f"Status da Resposta: {resposta.status_code}\n")
+                        arquivo.write("Cabeçalhos da Resposta:\n")
+                        arquivo.write(json.dumps(dict(resposta.headers), indent=2) + "\n")
+                        arquivo.write("Conteúdo da Resposta:\n")
+                        arquivo.write(resposta.text[:500] + "\n")  
         except Exception as e:
-            print(f"\nError during session: {e}")
+            print(f"\nErro durante a sessão: {e}")
             import traceback
             traceback.print_exc()
         
         finally:
-            input("\nPress Enter to close the browser...")
+            input("\nPressione Enter para fechar o navegador...")
             if self.browser:
                 self.browser.quit()
 
 def main():
-    session = JurisprudenciaSession()
-    session.start_session()
+    sessao = SessaoJurisprudencia()
+    sessao.iniciar_sessao()
 
 if __name__ == "__main__":
     main()
