@@ -105,10 +105,10 @@ def save_best_params_to_file(best_number, best_params, best_confidence, best_acc
 
 
 if __name__ == "__main__":
-    best_number, best_params, best_confidence, best_accuracy = grid_search("teste.png")
+    image_path = "captcha_solver/teste.png"
+    best_number, best_params, best_confidence, best_accuracy = grid_search(image_path)
     print(f"Best result: {best_number} with parameters {best_params}")
     print(f"Best confidence: {best_confidence}")
     print(f"Best accuracy (number length): {best_accuracy}")
-    
-   
+
     save_best_params_to_file(best_number, best_params, best_confidence, best_accuracy)
