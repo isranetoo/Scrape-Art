@@ -1,70 +1,103 @@
 import requests
-import json
-import re
 import os
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+import time
 
-URL_TOKEN = os.getenv('URL_TOKEN', 'https://pje.trt2.jus.br/juris-backend/api/token')
-URL_CAPTCHA = os.getenv('URL_CAPTCHA', 'https://pje.trt2.jus.br/juris-backend/api/captcha')
-URL_BUSCA_JURISPRUDENCIA = os.getenv('URL_BUSCA_JURISPRUDENCIA', 'https://pje.trt2.jus.br/juris-backend/api/jurisprudencia')
+BASE_URL = 'https://pje.trt2.jus.br/jurisprudencia/'
+URL_TOKEN = 'https://pje.trt2.jus.br/juris-backend/api/token'
+URL_CAPTCHA = 'https://pje.trt2.jus.br/juris-backend/api/captcha'
+URL_BUSCA_JURISPRUDENCIA = 'https://pje.trt2.jus.br/juris-backend/api/jurisprudencia'
 
-session = requests.Session()  
+def setup_browser():
+    """Setup and return browser instance"""
+    options = webdriver.ChromeOptions()
+    options.add_argument('--start-maximized')
+    return webdriver.Chrome(options=options)
 
-def obter_token_inicial():
-    """Obtém o token inicial da API."""
+def get_session_info():
+    """Open browser and get session information"""
+    browser = setup_browser()
     try:
-        response = session.get(URL_TOKEN, timeout=10)
-        response.raise_for_status()
-        if 'application/json' in response.headers.get('Content-Type', ''):
-            token_data = response.json()
-            return token_data.get('token')
-    except requests.exceptions.RequestException as e:
-        print(f"Erro ao obter token inicial: {e}")
-    return None
+        # Open the webpage
+        browser.get(BASE_URL)
+        
+        # Wait for page to load
+        time.sleep(2)
+        
+        # Get cookies from browser
+        cookies = browser.get_cookies()
+        
+        # Create requests session and add cookies
+        session = requests.Session()
+        for cookie in cookies:
+            session.cookies.set(cookie['name'], cookie['value'])
+        
+        # Get initial token
+        token_response = session.get(URL_TOKEN)
+        initial_token = token_response.json().get('token') if token_response.ok else None
+        
+        # Get captcha token
+        captcha_response = session.get(URL_CAPTCHA)
+        captcha_token = captcha_response.json().get('tokenCaptcha') if captcha_response.ok else None
+        
+        print("\nInitial Token:", initial_token)
+        print("Captcha Token:", captcha_token)
+        
+        # Wait for manual captcha input
+        captcha_input = input("\nPlease solve the captcha in the browser and enter the response here: ")
+        
+        return {
+            'session': session,
+            'initial_token': initial_token,
+            'captcha_token': captcha_token,
+            'captcha_response': captcha_input
+        }
+        
+    except Exception as e:
+        print(f"Error during browser automation: {e}")
+        return None
+    finally:
+        # Keep browser open for manual inspection
+        input("Press Enter to close the browser...")
+        browser.quit()
 
-def obter_token_captcha():
-    """Obtém o token de captcha via URL e resposta JSON da API."""
-    try:
-        response = session.get(URL_CAPTCHA, timeout=10)
-        response.raise_for_status()
-        if 'application/json' in response.headers.get('Content-Type', ''):
-            captcha_data = response.json()
-            return captcha_data.get('tokenCaptcha')
-    except requests.exceptions.RequestException as e:
-        print(f"Erro ao obter o token Captcha: {e}")
-    return None
-
-def buscar_documentos(token_captcha, token_desafio, pagina=0, tamanho=10):
-    """Busca documentos de jurisprudência com tokens fornecidos."""
+def buscar_documentos(session_info, pagina=0, tamanho=10):
+    """Search for documents using the session information"""
+    if not session_info:
+        print("No session information available")
+        return
+    
     params = {
-        "tokenDesafio": token_desafio,
-        "tokenCaptcha": token_captcha,
+        "tokenDesafio": session_info['initial_token'],
+        "tokenCaptcha": session_info['captcha_response'],
         "pagina": pagina,
         "tamanho": tamanho
     }
+    
     try:
-        response = session.get(URL_BUSCA_JURISPRUDENCIA, params=params, timeout=10)
+        response = session_info['session'].get(URL_BUSCA_JURISPRUDENCIA, params=params, timeout=10)
         response.raise_for_status()
-        if 'application/json' in response.headers.get('Content-Type', ''):
-            resultados = response.json()
-            print("Resultados da busca:", json.dumps(resultados, indent=2))
+        return response.json()
     except requests.exceptions.RequestException as e:
-        print(f"Erro ao buscar documentos: {e}")
+        print(f"Error searching documents: {e}")
+        return None
 
-def executar_busca():
-    """Execução completa da busca de jurisprudência."""
-    print("Iniciando busca de jurisprudência...")
-    token_inicial = obter_token_inicial()
-    if not token_inicial:
-        print("Token inicial não foi obtido.")
-        return
-
-    token_captcha = obter_token_captcha()
-    if not token_captcha:
-        print("Token Captcha não foi obtido.")
-        return
-
-    token_desafio = "748e98f6b97f17eebc82d7c8e348ef38840bc1345f5011cea2c2971285ba248b"
-    buscar_documentos(token_captcha, token_desafio)
+def main():
+    print("Starting jurisprudence search process...")
+    
+    # Get session information through browser
+    session_info = get_session_info()
+    
+    if session_info:
+        # Search documents
+        results = buscar_documentos(session_info)
+        if results:
+            print("\nSearch Results:", results)
+        else:
+            print("\nNo results found or error occurred during search")
 
 if __name__ == "__main__":
-    executar_busca()
+    main()
