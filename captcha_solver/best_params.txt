@@ -1,8 +1,0 @@
-best recognized number: 7ddd88
-best parameters:
-  threshold 1: 180
-  threshold 2: 135
-  sigma: 2.5
-  resize Dimensions: (2500, 750)
-best confidence: 22.333333333333332
-best accuracy (Number Length): 6
