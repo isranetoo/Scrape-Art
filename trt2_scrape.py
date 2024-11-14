@@ -49,6 +49,28 @@ class SessaoJurisprudencia:
             print(f"Erro ao configurar o navegador: {e}")
             raise
 
+    def obter_imagem_div(self):
+        """Coletar o link da imagem do Captcha"""
+        try:
+            
+            form_element = WebDriverWait(self.browser, 10).until(
+                EC.visibility_of_element_located((By.XPATH, "//*[@id='painelCaptcha']/div/form"))
+            )
+            img_element = WebDriverWait(form_element, 10).until(
+                EC.presence_of_element_located((By.TAG_NAME, 'img'))
+            )
+            img_src = img_element.get_attribute('src')
+            
+            if img_src:
+                print(f"Imagem encontrada: {img_src}")
+                return img_src
+            else:
+                print("A imagem não possui o atributo 'src'.")
+                return None
+        except Exception as e:
+            print(f"Erro ao obter a imagem: {e}")
+            return None
+
     def obter_requisicoes_rede(self):
         """Obter todas as requisições de rede contendo 'tokenDesafio'"""
         try:
@@ -149,9 +171,17 @@ class SessaoJurisprudencia:
                     if resposta:
                         arquivo.write(f"Status da Resposta: {resposta.status_code}\n")
                         arquivo.write("Cabeçalhos da Resposta:\n")
+                        arquivo.write(f"Link da imagem Captcha: {resposta.obter_imagem_div}\n")
                         arquivo.write(json.dumps(dict(resposta.headers), indent=2) + "\n")
                         arquivo.write("Conteúdo da Resposta:\n")
                         arquivo.write(resposta.text[:500] + "\n")  
+
+            img_src = self.obter_imagem_div()
+            if img_src:
+                print(f"URL da imagem extraída: {img_src}")
+            else:
+                print("Imagem não encontrada.")
+                
         except Exception as e:
             print(f"\nErro durante a sessão: {e}")
             import traceback

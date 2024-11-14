@@ -48,4 +48,15 @@ Status Code:
 
 Random Forest
 
-fazer um for
+#<--------------------------------------> 
+    # margin-top-0_3 margin-bottom-0_3
+
+
+    By.CSS_SELECTOR, "div.margin-top-0_3.margin-bottom-0_3"
+
+
+    //*[@id="imagemCaptcha"]
+
+    https://gist.github.com/spirkaa/4c3b8ad8fd34324bd307
+
+#<-------------------------------------->
