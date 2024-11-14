@@ -1,0 +1,8 @@
+best recognized number: vlekcj
+best parameters:
+  threshold 1: 160
+  threshold 2: 125
+  sigma: 3.0
+  resize Dimensions: (1500, 720)
+best confidence: 13.333333333333334
+best accuracy (Number Length): 6

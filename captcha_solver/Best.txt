@@ -1,0 +1,64 @@
+best recognized number: 7ddd88
+best parameters:
+  threshold 1: 180
+  threshold 2: 135
+  sigma: 2.5
+  resize Dimensions: (2500, 750)
+best confidence: 22.333333333333332
+best accuracy (Number Length): 6
+
+<------------------------------------->
+
+best recognized number: wkmf9b
+best parameters:
+  threshold 1: 160
+  threshold 2: 125
+  sigma: 1.0
+  resize Dimensions: (3500, 1050)
+best confidence: 20.571428571428573
+best accuracy (Number Length): 6
+
+<------------------------------------->
+
+best recognized number: vlekcj
+best parameters:
+  threshold 1: 160
+  threshold 2: 125
+  sigma: 3.0
+  resize Dimensions: (1500, 720)
+best confidence: 13.333333333333334
+best accuracy (Number Length): 6
+
+
+<------------------------------------->
+
+best recognized number: 7k632a
+best parameters:
+  threshold 1: 180
+  threshold 2: 135
+  sigma: 2.5
+  resize Dimensions: (4000, 1250)
+best confidence: 50.3
+best accuracy (Number Length): 6
+
+<------------------------------------->
+
+best recognized number: efhkyy
+best parameters:
+  threshold 1: 170
+  threshold 2: 130
+  sigma: 3.0
+  resize Dimensions: (2000, 920)
+best confidence: 27.0
+best accuracy (Number Length): 6
+
+<------------------------------------->
+
+best recognized number: vowak5
+best parameters:
+  threshold 1: 150
+  threshold 2: 120
+  sigma: 1.0
+  resize Dimensions: (3500, 1050)
+best confidence: 27.0
+best accuracy (Number Length): 6
