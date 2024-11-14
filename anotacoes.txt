@@ -54,9 +54,42 @@ Random Forest
 
     By.CSS_SELECTOR, "div.margin-top-0_3.margin-bottom-0_3"
 
+'src='
 
-    //*[@id="imagemCaptcha"]
+    with open(r"captcha.jpg", 'wb') as f:
+        f.write(base64.b64decode(img_captcha_base64))
+        ` 
+    
+def solve_captcha_local(th1, th2, sig1, sig2, bytes_data):
+    original = Image.open(BytesIO(base64.b64decode(bytes_data)))    
+
 
     https://gist.github.com/spirkaa/4c3b8ad8fd34324bd307
 
 #<-------------------------------------->
+
+
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
+# Inicializar o WebDriver
+driver = webdriver.Chrome()  # ou webdriver.Firefox(), dependendo do navegador que você está usando
+driver.get("URL_DA_SUA_PAGINA")  # substitua pela URL onde o elemento está localizado
+
+try:
+    # Esperar até que o elemento com o XPath especificado esteja presente
+    imagem_captcha = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.XPATH, '//*[@id="imagemCaptcha"]'))
+    )
+
+    # Coletar o valor do atributo 'src'
+    src_valor = imagem_captcha.get_attribute("src")
+    print("Valor do atributo 'src':", src_valor)
+
+except Exception as e:
+    print("Elemento não encontrado ou ocorreu um erro:", e)
+
+finally:
+    driver.quit()

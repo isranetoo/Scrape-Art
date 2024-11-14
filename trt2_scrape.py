@@ -1,13 +1,11 @@
-import requests
+import base64
+import json
+import time
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
-import time
-import json
-
+import requests
 from urllib.parse import urlparse, parse_qs
 
 URL_BASE = 'https://pje.trt2.jus.br/jurisprudencia/'
@@ -24,18 +22,9 @@ class SessaoJurisprudencia:
     def configurar_browser(self):
         """Configurar o navegador Chrome com as opções apropriadas"""
         opcoes = webdriver.ChromeOptions()
-        
         opcoes.add_argument('--start-maximized')
         opcoes.add_argument('--ignore-certificate-errors')
         opcoes.add_argument('--ignore-ssl-errors')
-        
-        opcoes.set_capability(
-            "goog:loggingPrefs",
-            {
-                "browser": "ALL",
-                "performance": "ALL",
-            }
-        )
         
         servico = Service(ChromeDriverManager().install())
         
@@ -48,28 +37,6 @@ class SessaoJurisprudencia:
         except Exception as e:
             print(f"Erro ao configurar o navegador: {e}")
             raise
-
-    def obter_imagem_div(self):
-        """Coletar o link da imagem do Captcha"""
-        try:
-            
-            form_element = WebDriverWait(self.browser, 10).until(
-                EC.visibility_of_element_located((By.XPATH, "//*[@id='painelCaptcha']/div/form"))
-            )
-            img_element = WebDriverWait(form_element, 10).until(
-                EC.presence_of_element_located((By.TAG_NAME, 'img'))
-            )
-            img_src = img_element.get_attribute('src')
-            
-            if img_src:
-                print(f"Imagem encontrada: {img_src}")
-                return img_src
-            else:
-                print("A imagem não possui o atributo 'src'.")
-                return None
-        except Exception as e:
-            print(f"Erro ao obter a imagem: {e}")
-            return None
 
     def obter_requisicoes_rede(self):
         """Obter todas as requisições de rede contendo 'tokenDesafio'"""
@@ -131,7 +98,31 @@ class SessaoJurisprudencia:
         except Exception as e:
             print(f"Erro ao fazer a requisição: {e}")
             return None
-
+    def salvar_imagem_captcha(self):
+        """Captura a imagem do captcha e salva como arquivo 'captcha.jpg'"""
+        try:
+            ele_captcha = self.browser.find_element(By.XPATH, "/html/body/form/div[2]/div[3]/span/div[1]/div/span[3]/img")
+            
+            img_captcha_base64 = self.browser.execute_async_script("""
+                var ele = arguments[0], callback = arguments[1];
+                ele.addEventListener('load', function fn(){
+                    ele.removeEventListener('load', fn, false);
+                    var cnv = document.createElement('canvas');
+                    cnv.width = this.width; cnv.height = this.height;
+                    cnv.getContext('2d').drawImage(this, 0, 0);
+                    callback(cnv.toDataURL('image/jpeg').substring(22));  // Remove prefix data:image/jpeg;base64,
+                }, false);
+                ele.dispatchEvent(new Event('load'));
+            """, ele_captcha)
+            
+            with open("captcha.jpg", 'wb') as f:
+                f.write(base64.b64decode(img_captcha_base64))
+            print("Captcha salvo como 'captcha.jpg'")
+        
+        except Exception as e:
+            print(f"Erro ao obter a imagem: {e}")
+            print("Imagem não encontrada.")
+    
     def iniciar_sessao(self):
         """Iniciar a sessão no navegador e lidar com o processo de token/captcha"""
         try:
@@ -160,6 +151,8 @@ class SessaoJurisprudencia:
             print("O formato deve ser algo como 'k8fe6w' (6 caracteres)")
             self.resposta_captcha = input("Insira a solução do captcha: ").strip()
             
+            self.salvar_imagem_captcha()
+            
             if self.token_desafio and self.resposta_captcha:
                 url_final = f"{URL_DOCUMENTOS}?tokenDesafio={self.token_desafio}&resposta={self.resposta_captcha}"
                 print(f"\nFazendo requisição com URL: {url_final}")
@@ -171,17 +164,9 @@ class SessaoJurisprudencia:
                     if resposta:
                         arquivo.write(f"Status da Resposta: {resposta.status_code}\n")
                         arquivo.write("Cabeçalhos da Resposta:\n")
-                        arquivo.write(f"Link da imagem Captcha: {resposta.obter_imagem_div}\n")
                         arquivo.write(json.dumps(dict(resposta.headers), indent=2) + "\n")
                         arquivo.write("Conteúdo da Resposta:\n")
-                        arquivo.write(resposta.text[:500] + "\n")  
-
-            img_src = self.obter_imagem_div()
-            if img_src:
-                print(f"URL da imagem extraída: {img_src}")
-            else:
-                print("Imagem não encontrada.")
-                
+                        arquivo.write(resposta.text[:500] + "\n")
         except Exception as e:
             print(f"\nErro durante a sessão: {e}")
             import traceback
@@ -198,3 +183,23 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
+driver = webdriver.Chrome() 
+driver.get("URL_DA_SUA_PAGINA")  
+try:
+    imagem_captcha = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.XPATH, '//*[@id="imagemCaptcha"]'))
+    )
+    src_valor = imagem_captcha.get_attribute("src")
+    print("Valor do atributo 'src':", src_valor)
+
+except Exception as e:
+    print("Elemento não encontrado ou ocorreu um erro:", e)
+
+finally:
+    driver.quit()
