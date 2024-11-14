@@ -142,7 +142,16 @@ class JurisprudenciaSession:
                 final_url = f"{URL_DOCUMENTOS}?tokenDesafio={self.challenge_token}&resposta={self.captcha_response}"
                 print(f"\nMaking request with URL: {final_url}")
                 response = self.make_request_with_headers(final_url)
-                
+            
+                with open("token_response.txt", "w") as file:
+                    file.write(f"Token: {self.challenge_token}\n")
+                    file.write(f"Captcha Response: {self.captcha_response}\n")
+                    if response:
+                        file.write(f"Response Status: {response.status_code}\n")
+                        file.write("Response Headers:\n")
+                        file.write(json.dumps(dict(response.headers), indent=2) + "\n")
+                        file.write("Response Content:\n")
+                        file.write(response.text[:500] + "\n")  
         except Exception as e:
             print(f"\nError during session: {e}")
             import traceback
