@@ -1,6 +1,7 @@
 import os
 import string
 import random
+import numpy
 from PIL import Image, ImageFilter
 from scipy.ndimage import gaussian_filter
 import pytesseract
@@ -19,43 +20,49 @@ if not os.path.exists(IMG_PATH):
     os.mkdir(IMG_PATH)
 
 
-def solve_captcha_local(image_path, th1, th2, sig, resize_dim):
-    original = Image.open(image_path)
-    original.save(IMG_ORIGINAL_PATH)
-    gray = original.convert("L")
+def solve_captcha_local(image_path, th1: int = 185, th2: int = 110, sig1: float = 1.0, sig2: float = 1.2) -> str:
+    """ Solves captcha
 
-    thresholded = gray.point(lambda p: p > th1 and 255)
+    Args:
+        image_path: path to the captcha to solve
+        th1: Theshold to erase before blur
+        th2: Theshold to erase after blur
+        sig1: blurring power
+        sig2: blurring power 2
+    
+    Returns:
+        captcha response
+    """
+    original = Image.open(image_path)  
+    original.save(IMG_ORIGINAL_PATH)  
 
-    blurred = gaussian_filter(np.array(thresholded), sigma=sig)
+    black_and_white = original.convert("L")  # converting to black and white
+    first_threshold = black_and_white.point(lambda p: p > th1 and 255)
+    blur = numpy.array(first_threshold)  # create an image array
+    blurred = gaussian_filter(blur, sigma=sig1)
     blurred = Image.fromarray(blurred)
-
     final = blurred.point(lambda p: p > th2 and 255)
-
     final = final.filter(ImageFilter.EDGE_ENHANCE_MORE)
     final = final.filter(ImageFilter.SHARPEN)
     final.save(IMG_FILTERED_PATH)
 
+    blur2 = numpy.array(final)  # create an image array
+    blurred2 = gaussian_filter(blur2, sigma=sig2)
+    blurred2 = Image.fromarray(blurred2)
+    final2 = blurred2.point(lambda p: p > th2 and 255)
+    final2 = final2.filter(ImageFilter.EDGE_ENHANCE_MORE)
+    final2 = final2.filter(ImageFilter.SHARPEN)
+    final2.save(IMG_FINAL_PATH)
 
-    final_resized = final.resize(resize_dim)
-    final_resized = final_resized.filter(ImageFilter.EDGE_ENHANCE_MORE)
-    final_resized = final_resized.filter(ImageFilter.SHARPEN)
-    final_resized.save(IMG_FINAL_PATH)
-
-    custom_oem_psm_config = r'--psm 11 --oem 3 -c tessedit_char_whitelist=0123456789abcdefghijklmnopqrstuvwxyz'
-    ocr_result = pytesseract.image_to_string(final_resized, config=custom_oem_psm_config)
-    
-    ocr_data = pytesseract.image_to_data(final_resized, config=custom_oem_psm_config, output_type=pytesseract.Output.DICT)
-    
-    total_confidence = sum([int(conf) for conf in ocr_data['conf'] if conf != '-1'])
-    num_words = len([conf for conf in ocr_data['conf'] if conf != '-1'])
-    average_confidence = total_confidence / num_words if num_words > 0 else 0
-
-    number = ocr_result.strip().replace(" ", "").replace("\n", "")
+    ocr_config = '--psm 11 --oem 3 -c tessedit_char_whitelist=0123456789abcdefghijklmnopqrstuvxwyz'
+    number = pytesseract.image_to_string(Image.open(IMG_FINAL_PATH), config=ocr_config)
+    number = number.strip().lstrip().rstrip().replace(chr(32), "").replace("\n", "")
 
     if len(number) != 6:
-        number = pytesseract.image_to_string(final, config=custom_oem_psm_config).strip().replace(" ", "").replace("\n", "")
+        number = pytesseract.image_to_string(Image.open(IMG_FILTERED_PATH), config=ocr_config)
+        number = number.strip().lstrip().rstrip().replace(chr(32), "").replace("\n", "")
 
-    return number, average_confidence
+    return number
 
 
 def grid_search(image_path):

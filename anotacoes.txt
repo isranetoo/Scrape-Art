@@ -1,12 +1,3 @@
-isLogadoPje() {
-                return pS(this, void 0, void 0, (function*() {
-                    try {
-                        const e = yield this.httpClient.get("/juris-backend/api/token").toPromise();
-                        return null != e.mensagem ? e.mensagem : e
-                    } catch (PC) {
-                        return
-                    }
-
 api do token: https://pje.trt2.jus.br/juris-backend/api/token
 api documento: https://pje.trt2.jus.br/juris-backend/api/documentos
 
@@ -30,7 +21,11 @@ O TOKEN pode variar: a4bfb93d6db77d72899f9c726e7a65c33b266cd9e3f8789039adcdaeb90
 
 https://pje.trt2.jus.br/juris-backend/api/documentos?tokenCaptcha=a4bfb93d6db77d72899f9c726e7a65c31cfa9f351057aa383115e73014f98a82
 
+<---------------------------->
+
 o token é uma VAR, tokenCaptcha = a4bfb93d6db77d72899f9c726e7a65c31cfa9f351057aa383115e73014f98a82
+
+<---------------------------->
 
 Request URL:
 https://pje.trt2.jus.br/juris-backend/api/documentos?tokenCaptcha=a4bfb93d6db77d72899f9c726e7a65c31cfa9f351057aa383115e73014f98a82
@@ -38,6 +33,8 @@ Request Method:
 POST
 Status Code:
 200 OK
+
+<---------------------------->
 
 Request URL:
 https://pje.trt2.jus.br/juris-backend/api/captcha
@@ -47,7 +44,8 @@ Status Code:
 200 OK
 
 
----
-radom forest
+<---------------------------->
+
+Random Forest
 
 fazer um for
