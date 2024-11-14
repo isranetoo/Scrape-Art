@@ -59,9 +59,9 @@ class SessaoJurisprudencia:
                 EC.visibility_of_element_located((By.XPATH, '//*[@id="imagemCaptcha"]'))
             )
             img_element = WebDriverWait(form_element, 10).until(
-                EC.presence_of_element_located((By.TAG_NAME, 'src'))
+                EC.presence_of_element_located((By.TAG_NAME, 'img'))
             )
-            img_src = img_element.get_attribute('src')
+            img_src = img_element.get_attribute('src=')
             
             if img_src:
                 print(f"Imagem encontrada: {img_src}")
