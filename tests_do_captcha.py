@@ -6,11 +6,9 @@ from scipy.ndimage import gaussian_filter
 import pytesseract
 import numpy as np
 
-# Definir o caminho para o executável do Tesseract, se necessário
 if os.name == "nt":
     pytesseract.pytesseract.tesseract_cmd = 'C:\\Program Files\\Tesseract-OCR\\tesseract.exe'
 
-# Caminhos para salvar as imagens processadas
 F_PATH = os.path.dirname(__file__)
 IMG_PATH = os.path.join(F_PATH, "..", "temp")
 IMG_UNIQUE_ID = "".join(random.choices(string.digits, k=6))
@@ -29,25 +27,22 @@ def solve_captcha_local(image_path, th1, th2, sig, resize_dim):
     original = Image.open(image_path)
     original.save(IMG_ORIGINAL_PATH)
     
-    # Converter para escala de cinza
+
     gray = original.convert("L")
 
-    # Aplicar thresholding
     thresholded = gray.point(lambda p: p > th1 and 255)
 
-    # Aplicar desfoque gaussiano
     blurred = gaussian_filter(np.array(thresholded), sigma=sig)
     blurred = Image.fromarray(blurred)
 
-    # Aplicar outro threshold após o desfoque
     final = blurred.point(lambda p: p > th2 and 255)
     
-    # Melhorar bordas e nitidez
+
     final = final.filter(ImageFilter.EDGE_ENHANCE_MORE)
     final = final.filter(ImageFilter.SHARPEN)
     final.save(IMG_FILTERED_PATH)
 
-    # Redimensionar a imagem
+
     final_resized = final.resize(resize_dim)
     final_resized = final_resized.filter(ImageFilter.EDGE_ENHANCE_MORE)
     final_resized = final_resized.filter(ImageFilter.SHARPEN)
