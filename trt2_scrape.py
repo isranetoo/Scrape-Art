@@ -1,3 +1,6 @@
+import base64
+from io import BytesIO
+from PIL import Image
 import requests
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -52,17 +55,20 @@ class SessaoJurisprudencia:
     def obter_imagem_div(self):
         """Coletar o link da imagem do Captcha"""
         try:
-            
             form_element = WebDriverWait(self.browser, 10).until(
-                EC.visibility_of_element_located((By.XPATH, "//*[@id='painelCaptcha']/div/form"))
+                EC.visibility_of_element_located((By.XPATH, '//*[@id="imagemCaptcha"]'))
             )
             img_element = WebDriverWait(form_element, 10).until(
-                EC.presence_of_element_located((By.TAG_NAME, 'img'))
+                EC.presence_of_element_located((By.TAG_NAME, 'src'))
             )
             img_src = img_element.get_attribute('src')
             
             if img_src:
                 print(f"Imagem encontrada: {img_src}")
+                if img_src.startswith('data:image'):
+                    self.converter_base64_para_jpeg(img_src)
+                else:
+                    print("A imagem não é base64.")
                 return img_src
             else:
                 print("A imagem não possui o atributo 'src'.")
@@ -70,6 +76,21 @@ class SessaoJurisprudencia:
         except Exception as e:
             print(f"Erro ao obter a imagem: {e}")
             return None
+
+    def converter_base64_para_jpeg(self, base64_string, captcha="imagem_captcha.jpeg"):
+        """Converter uma string base64 para um arquivo JPEG"""
+        try:
+            if base64_string.startswith('data:image'):
+                base64_string = base64_string.split(',')[1]
+
+            imagem_binaria = base64.b64decode(base64_string)
+
+            imagem = Image.open(BytesIO(imagem_binaria))
+
+            imagem.save(captcha, "JPEG")
+            print(f"Imagem salva como {captcha}")
+        except Exception as e:
+            print(f"Erro ao converter base64 para JPEG: {e}")
 
     def obter_requisicoes_rede(self):
         """Obter todas as requisições de rede contendo 'tokenDesafio'"""

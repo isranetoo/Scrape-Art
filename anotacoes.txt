@@ -54,6 +54,8 @@ Random Forest
 
     By.CSS_SELECTOR, "div.margin-top-0_3.margin-bottom-0_3"
 
+    XPATH=  form do capctha: //*[@id="painelCaptcha"]/div/form
+    XPATH= img do capctha : //*[@id="imagemCaptcha"]
 'src='
 
     with open(r"captcha.jpg", 'wb') as f:
