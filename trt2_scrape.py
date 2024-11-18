@@ -55,7 +55,7 @@ class SessaoJurisprudencia:
     def obter_imagem_div(self):
         """Coletar o link da imagem do Captcha"""
         try:
-            form_element = WebDriverWait(self.browser, 10).until(
+            form_element = WebDriverWait(self.browser, 30).until(
                 EC.visibility_of_element_located((By.XPATH, '//*[@id="imagemCaptcha"]'))
             )
             img_element = WebDriverWait(form_element, 10).until(
@@ -95,7 +95,7 @@ class SessaoJurisprudencia:
         dados = []
 
         try:
-            for i in range(1, 99): 
+            for i in range(1, 20): 
                 titulo_xpath = f"/html/body/app-root/app-documentos-busca/div[2]/mat-list/mat-list-item[{i}]/div/div[2]/div[1]/h4/a"
                 estagio_xpath = f"/html/body/app-root/app-documentos-busca/div[2]/mat-list/mat-list-item[{i}]/div/div[2]/p[1]"
                 orgao_xpath = f"/html/body/app-root/app-documentos-busca/div[2]/mat-list/mat-list-item[{i}]/div/div[2]/p[2]"

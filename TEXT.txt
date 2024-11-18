@@ -13,6 +13,7 @@ from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from urllib.parse import urlparse, parse_qs
 
+# URLs base
 URL_BASE = 'https://pje.trt2.jus.br/jurisprudencia/'
 URL_DOCUMENTOS = 'https://pje.trt2.jus.br/juris-backend/api/documentos'
 URL_TOKEN = 'https://pje.trt2.jus.br/juris-backend/api/token'
@@ -99,7 +100,7 @@ class SessaoJurisprudencia:
                 estagio_xpath = f"/html/body/app-root/app-documentos-busca/div[2]/mat-list/mat-list-item[{i}]/div/div[2]/p[1]"
                 orgao_xpath = f"/html/body/app-root/app-documentos-busca/div[2]/mat-list/mat-list-item[{i}]/div/div[2]/p[2]"
                 amostras_xpath = f"/html/body/app-root/app-documentos-busca/div[2]/mat-list/mat-list-item[{i}]/div/div[2]/p[4]"
-                      
+
                 titulo = WebDriverWait(self.browser, 15).until(
                     EC.visibility_of_element_located((By.XPATH, titulo_xpath))
                 ).text
@@ -213,43 +214,28 @@ class SessaoJurisprudencia:
             self.obter_imagem_div()
             if self.img_src:
                 print(f"Imagem do CAPTCHA coletada: {self.img_src}")
-            else:
-                print("Falha ao coletar a imagem do CAPTCHA.")
-                return  
+                
+                # Inserir a resposta do CAPTCHA
+                self.resposta_captcha = input("Digite o texto do CAPTCHA: ")
 
-            print("\nClicando no botão necessário antes de continuar...")
-            try:
-                botao_xpath = '/html/body/div[4]/div[2]/div/div/div/mat-option[4]/span'
-                botao = WebDriverWait(self.browser, 25).until(
-                    EC.element_to_be_clickable((By.XPATH, botao_xpath))
+                # Clicar no botão antes de coletar os dados
+                botao_opcao_xpath = "/html/body/div[4]/div[2]/div/div/div/mat-option[4]/span"
+                botao_opcao = WebDriverWait(self.browser, 10).until(
+                    EC.element_to_be_clickable((By.XPATH, botao_opcao_xpath))
                 )
-                botao.click()
-                print("Botão clicado com sucesso.")
-            except Exception as e:
-                print(f"Erro ao clicar no botão: {e}")
-                return 
+                botao_opcao.click()
+                print("Botão de opção clicado.")
 
-            print("\nAguardando o token aparecer...")
-            self.token_desafio = self.aguardar_token_na_pagina()
-            if self.token_desafio:
-                print(f"\nToken extraído: {self.token_desafio}")
-            else:
-                print("\nFalha ao extrair o token")
-                return
-            print("\nPor favor, insira a solução do captcha que você vê no navegador.")
-            print("O formato deve ser algo como 'k8fe6w' (6 caracteres)")
-            self.resposta_captcha = input("Insira a solução do captcha: ").strip()
-            
-            if self.token_desafio and self.resposta_captcha:
-                if self.img_src:
-                    self.converter_base64_para_jpeg(self.img_src)
-                
-                url_final = f"{URL_DOCUMENTOS}?tokenDesafio={self.token_desafio}&resposta={self.resposta_captcha}"
-                print(f"\nFazendo requisição com URL: {url_final}")
-                resposta = self.fazer_requisicao_com_headers(url_final)
-                
-                dados = self.coletar_dados_xpaths()
-                self.salvar_dados_em_csv(dados)
+                # Encontrar o botão de envio e clicar após inserir a resposta do CAPTCHA
+                botao_enviar_xpath = "/html/body/app-root/app-documentos-busca/app-captcha/div/div/div/div/form/button"
+                botao_enviar = WebDriverWait(self.browser, 10).until(
+                    EC.element_to_be_clickable((By.XPATH, botao_enviar_xpath))
+                )
+                botao_enviar.click()
+                print("Botão de envio clicado após inserir o CAPTCHA.")
+
+                # Esperar algum tempo para ver a resposta após clicar no botão
+                time.sleep(5)
             
         except Exception as e:
             print(f"Erro ao iniciar a sessão: {e}")
