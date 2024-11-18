@@ -10,7 +10,6 @@ from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 import time
 import json
-
 from urllib.parse import urlparse, parse_qs
 
 URL_BASE = 'https://pje.trt2.jus.br/jurisprudencia/'
@@ -27,11 +26,9 @@ class SessaoJurisprudencia:
     def configurar_browser(self):
         """Configurar o navegador Chrome com as opções apropriadas"""
         opcoes = webdriver.ChromeOptions()
-        
         opcoes.add_argument('--start-maximized')
         opcoes.add_argument('--ignore-certificate-errors')
         opcoes.add_argument('--ignore-ssl-errors')
-        
         opcoes.set_capability(
             "goog:loggingPrefs",
             {
@@ -55,14 +52,14 @@ class SessaoJurisprudencia:
     def obter_imagem_div(self):
         """Coletar o link da imagem do Captcha"""
         try:
-            form_element = WebDriverWait(self.browser, 10).until(
+            form_element = WebDriverWait(self.browser, 30).until(
                 EC.visibility_of_element_located((By.XPATH, '//*[@id="imagemCaptcha"]'))
             )
-            img_element = WebDriverWait(form_element, 10).until(
-                EC.presence_of_element_located((By.TAG_NAME, 'img'))
+            img_element = WebDriverWait(form_element, 40).until(
+                EC.presence_of_element_located((By.XPATH, '/html/body/app-root/app-documentos-busca/app-captcha/div/div/div/div/form/img'))
             )
-            img_src = img_element.get_attribute('src=')
-            
+            img_src = img_element.get_attribute('src')
+
             if img_src:
                 print(f"Imagem encontrada: {img_src}")
                 if img_src.startswith('data:image'):
@@ -169,6 +166,15 @@ class SessaoJurisprudencia:
                 print(f"Cookie: {cookie['name']} = {cookie['value']}")
                 self.sessao.cookies.set(cookie['name'], cookie['value'])
             
+            # Coletar a imagem do CAPTCHA antes de pedir a resposta
+            print("\nColetando a imagem do CAPTCHA...")
+            img_src = self.obter_imagem_div()
+            if img_src:
+                print(f"Imagem do CAPTCHA coletada: {img_src}")
+            else:
+                print("Falha ao coletar a imagem do CAPTCHA.")
+            
+            # Aguardar o token
             print("\nAguardando o token aparecer...")
             self.token_desafio = self.aguardar_token_na_pagina()
             if self.token_desafio:
@@ -177,6 +183,7 @@ class SessaoJurisprudencia:
                 print("\nFalha ao extrair o token")
                 return
 
+            # Pedir a resposta do CAPTCHA
             print("\nPor favor, insira a solução do captcha que você vê no navegador.")
             print("O formato deve ser algo como 'k8fe6w' (6 caracteres)")
             self.resposta_captcha = input("Insira a solução do captcha: ").strip()
@@ -189,33 +196,20 @@ class SessaoJurisprudencia:
                 with open("resposta_token.txt", "w") as arquivo:
                     arquivo.write(f"Token: {self.token_desafio}\n")
                     arquivo.write(f"Resposta do Captcha: {self.resposta_captcha}\n")
+                    if img_src:
+                        arquivo.write(f"URL ou Base64 da Imagem do CAPTCHA: {img_src}\n")
                     if resposta:
                         arquivo.write(f"Status da Resposta: {resposta.status_code}\n")
                         arquivo.write("Cabeçalhos da Resposta:\n")
-                        arquivo.write(f"Link da imagem Captcha: {resposta.obter_imagem_div}\n")
-                        arquivo.write(json.dumps(dict(resposta.headers), indent=2) + "\n")
-                        arquivo.write("Conteúdo da Resposta:\n")
-                        arquivo.write(resposta.text[:500] + "\n")  
-
-            img_src = self.obter_imagem_div()
-            if img_src:
-                print(f"URL da imagem extraída: {img_src}")
-            else:
-                print("Imagem não encontrada.")
-                
+                        for chave, valor in resposta.headers.items():
+                            arquivo.write(f"{chave}: {valor}\n")
+                        arquivo.write(f"Conteúdo da Resposta: {resposta.text[:500]}\n")
         except Exception as e:
-            print(f"\nErro durante a sessão: {e}")
-            import traceback
-            traceback.print_exc()
-        
+            print(f"Erro durante a sessão: {e}")
         finally:
-            input("\nPressione Enter para fechar o navegador...")
             if self.browser:
                 self.browser.quit()
 
-def main():
+if __name__ == '__main__':
     sessao = SessaoJurisprudencia()
     sessao.iniciar_sessao()
-
-if __name__ == "__main__":
-    main()
