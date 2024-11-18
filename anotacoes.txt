@@ -57,7 +57,7 @@ Random Forest
 
 <-------------------------------------->
 
-        escreva o codingo Inteiro
+        escreva o codingo inteiro
          
         faca com que o codigo colete as informacoes desses XPATH depous do salvamento da img e salve em um arquivo .csv 
 
@@ -85,8 +85,10 @@ DIV inteira dos processos XPATH: //*[@id="divListaResultados"]
 
 <-------------------------------------->
 
-modifique esse codigo possibilitando que antes de fazer a coleta dos dados, clique nesse botao com o XPATH: /html/body/div[4]/div[2]/div/div/div/mat-option[4]/span e ai sim continue a coleta
+https://stackoverflow.com/questions/21350605/python-selenium-click-on-button
 
+modifique esse codigo possibilitando que antes de fazer a coleta dos dados, clique nesse botao com o XPATH: "/html/body/div[4]/div[2]/div/div/div/mat-option[4]/span" adicionando somente a funcionalidade do botao e faca com que ele seja acionado depois que eu inserir o captcha e o restante do codigo deixe o mesmo 
+somente adicine a funcionalidade do click do botao e deixe o codigo da mesma forma 
 botao de 100 XPATH:  /html/body/div[4]/div[2]/div/div/div/mat-option[4]/span
 botao de passar a pagina XPATH: /html/body/app-root/app-documentos-busca/div[2]/div/mat-paginator/div/div/div[2]/button[2]
 

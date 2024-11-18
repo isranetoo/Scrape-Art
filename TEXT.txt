@@ -13,7 +13,6 @@ from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from urllib.parse import urlparse, parse_qs
 
-# URLs base
 URL_BASE = 'https://pje.trt2.jus.br/jurisprudencia/'
 URL_DOCUMENTOS = 'https://pje.trt2.jus.br/juris-backend/api/documentos'
 URL_TOKEN = 'https://pje.trt2.jus.br/juris-backend/api/token'
@@ -216,7 +215,20 @@ class SessaoJurisprudencia:
                 print(f"Imagem do CAPTCHA coletada: {self.img_src}")
             else:
                 print("Falha ao coletar a imagem do CAPTCHA.")
-            
+                return  
+
+            print("\nClicando no botão necessário antes de continuar...")
+            try:
+                botao_xpath = '/html/body/div[4]/div[2]/div/div/div/mat-option[4]/span'
+                botao = WebDriverWait(self.browser, 25).until(
+                    EC.element_to_be_clickable((By.XPATH, botao_xpath))
+                )
+                botao.click()
+                print("Botão clicado com sucesso.")
+            except Exception as e:
+                print(f"Erro ao clicar no botão: {e}")
+                return 
+
             print("\nAguardando o token aparecer...")
             self.token_desafio = self.aguardar_token_na_pagina()
             if self.token_desafio:
@@ -224,7 +236,8 @@ class SessaoJurisprudencia:
             else:
                 print("\nFalha ao extrair o token")
                 return
-            print("\nInsira a solução do captcha que você vê no navegador:")
+            print("\nPor favor, insira a solução do captcha que você vê no navegador.")
+            print("O formato deve ser algo como 'k8fe6w' (6 caracteres)")
             self.resposta_captcha = input("Insira a solução do captcha: ").strip()
             
             if self.token_desafio and self.resposta_captcha:
