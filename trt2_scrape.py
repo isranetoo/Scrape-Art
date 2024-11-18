@@ -1,4 +1,7 @@
 import base64
+import time
+import json
+import csv
 from io import BytesIO
 from PIL import Image
 import requests
@@ -8,10 +11,9 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
-import time
-import json
 from urllib.parse import urlparse, parse_qs
 
+# URLs base
 URL_BASE = 'https://pje.trt2.jus.br/jurisprudencia/'
 URL_DOCUMENTOS = 'https://pje.trt2.jus.br/juris-backend/api/documentos'
 URL_TOKEN = 'https://pje.trt2.jus.br/juris-backend/api/token'
@@ -22,7 +24,7 @@ class SessaoJurisprudencia:
         self.sessao = requests.Session()
         self.token_desafio = None
         self.resposta_captcha = None
-        self.img_src = None  # Para armazenar o src da imagem CAPTCHA
+        self.img_src = None
 
     def configurar_browser(self):
         """Configurar o navegador Chrome com as opções apropriadas"""
@@ -88,22 +90,69 @@ class SessaoJurisprudencia:
         except Exception as e:
             print(f"Erro ao converter base64 para JPEG: {e}")
 
-    def obter_requisicoes_rede(self):
-        """Obter todas as requisições de rede contendo 'tokenDesafio'"""
+    def coletar_dados_xpaths(self):
+        """Coletar os dados dos XPaths e retorná-los em um formato estruturado"""
+        dados = []
+
         try:
-            logs = self.browser.get_log('performance')
-            for entrada in logs:
-                dados_log = json.loads(entrada.get('message', {}))
-                mensagem = dados_log.get('message', {})
-                if mensagem.get('method') == 'Network.requestWillBeSent':
-                    requisicao = mensagem.get('params', {}).get('request', {})
-                    url = requisicao.get('url', '')
-                    if 'tokenDesafio' in url:
-                        print(f"URL de token encontrado: {url}")
-                        return url
+            for i in range(1, 99): 
+                titulo_xpath = f"/html/body/app-root/app-documentos-busca/div[2]/mat-list/mat-list-item[{i}]/div/div[2]/div[1]/h4/a"
+                estagio_xpath = f"/html/body/app-root/app-documentos-busca/div[2]/mat-list/mat-list-item[{i}]/div/div[2]/p[1]"
+                orgao_xpath = f"/html/body/app-root/app-documentos-busca/div[2]/mat-list/mat-list-item[{i}]/div/div[2]/p[2]"
+                amostras_xpath = f"/html/body/app-root/app-documentos-busca/div[2]/mat-list/mat-list-item[{i}]/div/div[2]/p[4]"
+                      
+                titulo = WebDriverWait(self.browser, 15).until(
+                    EC.visibility_of_element_located((By.XPATH, titulo_xpath))
+                ).text
+                estagio = WebDriverWait(self.browser, 15).until(
+                    EC.visibility_of_element_located((By.XPATH, estagio_xpath))
+                ).text
+                orgao = WebDriverWait(self.browser, 15).until(
+                    EC.visibility_of_element_located((By.XPATH, orgao_xpath))
+                ).text
+                
+                amostras = WebDriverWait(self.browser, 15).until(
+                    EC.visibility_of_element_located((By.XPATH, amostras_xpath))
+                ).text
+
+                dados.append([titulo, estagio, orgao, amostras])
         except Exception as e:
-            print(f"Erro ao obter requisições de rede: {e}")
-        return None
+            print(f"Erro ao coletar os dados dos XPaths: {e}")
+
+        return dados
+
+    def salvar_dados_em_csv(self, dados, nome_arquivo="dados_jurisprudencia.csv"):
+        """Salvar os dados coletados em um arquivo CSV"""
+        try:
+            with open(nome_arquivo, mode='w', newline='', encoding='utf-8') as file:
+                writer = csv.writer(file)
+                writer.writerow(['Título', 'Estágio do Processo', 'Órgão Julgador', 'Ementa', 'Amostras do Inteiro Teor'])
+                for linha in dados:
+                    writer.writerow(linha)
+            print(f"Dados salvos em {nome_arquivo}")
+        except Exception as e:
+            print(f"Erro ao salvar os dados em CSV: {e}")
+
+    def fazer_requisicao_com_headers(self, url):
+        """Fazer uma requisição com os cabeçalhos adequados"""
+        cabecalhos = {
+            'Accept': 'application/json, text/plain, */*',
+            'Accept-Language': 'pt-BR,pt;q=0.9',
+            'Connection': 'keep-alive',
+            'Referer': URL_BASE,
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+        
+        try:
+            resposta = self.sessao.get(url, headers=cabecalhos)
+            print(f"\nURL de Requisição: {url}")
+            print(f"Status da Resposta: {resposta.status_code}")
+            print(f"Cabeçalhos da Resposta: {dict(resposta.headers)}")
+            print(f"Conteúdo da Resposta: {resposta.text[:500]}")
+            return resposta
+        except Exception as e:
+            print(f"Erro ao fazer a requisição: {e}")
+            return None
 
     def aguardar_token_na_pagina(self, timeout=30):
         """Aguardar e extrair o token da página ou das requisições de rede"""
@@ -128,26 +177,22 @@ class SessaoJurisprudencia:
         print("Tempo esgotado aguardando pelo token")
         return None
 
-    def fazer_requisicao_com_headers(self, url):
-        """Fazer uma requisição com os cabeçalhos adequados"""
-        cabecalhos = {
-            'Accept': 'application/json, text/plain, */*',
-            'Accept-Language': 'pt-BR,pt;q=0.9',
-            'Connection': 'keep-alive',
-            'Referer': URL_BASE,
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-        }
-        
+    def obter_requisicoes_rede(self):
+        """Obter todas as requisições de rede contendo 'tokenDesafio'"""
         try:
-            resposta = self.sessao.get(url, headers=cabecalhos)
-            print(f"\nURL de Requisição: {url}")
-            print(f"Status da Resposta: {resposta.status_code}")
-            print(f"Cabeçalhos da Resposta: {dict(resposta.headers)}")
-            print(f"Conteúdo da Resposta: {resposta.text[:500]}")
-            return resposta
+            logs = self.browser.get_log('performance')
+            for entrada in logs:
+                dados_log = json.loads(entrada.get('message', {}))
+                mensagem = dados_log.get('message', {})
+                if mensagem.get('method') == 'Network.requestWillBeSent':
+                    requisicao = mensagem.get('params', {}).get('request', {})
+                    url = requisicao.get('url', '')
+                    if 'tokenDesafio' in url:
+                        print(f"URL de token encontrado: {url}")
+                        return url
         except Exception as e:
-            print(f"Erro ao fazer a requisição: {e}")
-            return None
+            print(f"Erro ao obter requisições de rede: {e}")
+        return None
 
     def iniciar_sessao(self):
         """Iniciar a sessão no navegador e lidar com o processo de token/captcha"""
@@ -190,21 +235,13 @@ class SessaoJurisprudencia:
                 url_final = f"{URL_DOCUMENTOS}?tokenDesafio={self.token_desafio}&resposta={self.resposta_captcha}"
                 print(f"\nFazendo requisição com URL: {url_final}")
                 resposta = self.fazer_requisicao_com_headers(url_final)
-            
-                with open("resposta_token.txt", "w") as arquivo:
-                    arquivo.write(f"Token: {self.token_desafio}\n")
-                    arquivo.write(f"Resposta do Captcha: {self.resposta_captcha}\n")
-                    if self.img_src:
-                        arquivo.write(f"URL ou Base64 da Imagem do CAPTCHA: {self.img_src}\n")
-                    if resposta:
-                        arquivo.write(f"Status da Resposta: {resposta.status_code}\n")
-                        arquivo.write("Cabeçalhos da Resposta:\n")
-                        for chave, valor in resposta.headers.items():
-                            arquivo.write(f"{chave}: {valor}\n")
-                        arquivo.write(f"Conteúdo da Resposta: {resposta.text[:500]}")
+                
+                dados = self.coletar_dados_xpaths()
+                self.salvar_dados_em_csv(dados)
             
         except Exception as e:
             print(f"Erro ao iniciar a sessão: {e}")
+
 
 sessao = SessaoJurisprudencia()
 sessao.iniciar_sessao()

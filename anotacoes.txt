@@ -25,7 +25,7 @@ https://pje.trt2.jus.br/juris-backend/api/documentos?tokenCaptcha=a4bfb93d6db77d
 
 o token é uma VAR, tokenCaptcha = a4bfb93d6db77d72899f9c726e7a65c31cfa9f351057aa383115e73014f98a82
 
-<---------------------------->
+<--------------------------------------> 
 
 Request URL:
 https://pje.trt2.jus.br/juris-backend/api/documentos?tokenCaptcha=a4bfb93d6db77d72899f9c726e7a65c31cfa9f351057aa383115e73014f98a82
@@ -34,7 +34,7 @@ POST
 Status Code:
 200 OK
 
-<---------------------------->
+<--------------------------------------> 
 
 Request URL:
 https://pje.trt2.jus.br/juris-backend/api/captcha
@@ -44,40 +44,45 @@ Status Code:
 200 OK
 
 
-<---------------------------->
+<--------------------------------------> 
 
 Random Forest
 
-#<--------------------------------------> 
-    # margin-top-0_3 margin-bottom-0_3
-
-
-    By.CSS_SELECTOR, "div.margin-top-0_3.margin-bottom-0_3"
-
-    XPATH=  form do capctha: //*[@id="painelCaptcha"]/div/form
-    XPATH= img do capctha : //*[@id="imagemCaptcha"]
-'src='
-
-    with open(r"captcha.jpg", 'wb') as f:
-        f.write(base64.b64decode(img_captcha_base64))
-        ` 
-    
-def solve_captcha_local(th1, th2, sig1, sig2, bytes_data):
-    original = Image.open(BytesIO(base64.b64decode(bytes_data)))    
-
+<--------------------------------------> 
+   
 
     https://gist.github.com/spirkaa/4c3b8ad8fd34324bd307
 
-    faca com que ao ser uma img a ser coletada do XPATH seja a string de "src=" , que seria uma img em base64 e ja crie uma funcao que a converta em jpeg
-
-
     /html/body/app-root/app-documentos-busca/app-captcha/div/div/div/div/form/img
 
-#<-------------------------------------->
+<-------------------------------------->
 
         escreva o codingo Inteiro
+         
+        faca com que o codigo colete as informacoes desses XPATH depous do salvamento da img e salve em um arquivo .csv 
 
-    from pdb import set_trace
-    set_trace()
 
-    faca com que a imagem seja salva so depois da resposta do capctha e use a resposta como nome da imagem seja a resposta do capctha
+<-------------------------------------->
+
+Titulo XPATH: //*[@id="divListaResultados"]/mat-list-item[1]/div/div[2]/div[1]/h4/a
+Titulo XPATH: //*[@id="divListaResultados"]/mat-list-item[2]/div/div[2]/div[1]/h4/a
+/html/body/app-root/app-documentos-busca/div[2]/mat-list/mat-list-item[1]/div/div[2]/div[1]/h4/a
+
+Estagio do processo XPATH: //*[@id="divListaResultados"]/mat-list-item[1]/div/div[2]/p[1]/span
+Estagio do processo XPATH: //*[@id="divListaResultados"]/mat-list-item[2]/div/div[2]/p[1]
+
+Órgão julgador XPATH: //*[@id="divListaResultados"]/mat-list-item[1]/div/div[2]/p[3]
+Órgão julgador XPATH: //*[@id="divListaResultados"]/mat-list-item[2]/div/div[2]/p[3]
+
+Ementa XPATH: //*[@id="divListaResultados"]/mat-list-item[1]/div/div[2]/p[4]
+Ementa XPATH: //*[@id="divListaResultados"]/mat-list-item[2]/div/div[2]/p[4]
+
+Amostras do Inteiro Teor: //*[@id="divListaResultados"]/mat-list-item[1]/div/div[2]/p[6]/strong
+Amostras do Inteiro Teor: //*[@id="divListaResultados"]/mat-list-item[2]/div/div[2]/p[6]/strong
+
+
+DIV inteira dos processos XPATH: //*[@id="divListaResultados"]
+
+<-------------------------------------->
+
+faca com que os tokens sejam armazenados em .txt porem quando vier um novo, nao substituir o antigo token
