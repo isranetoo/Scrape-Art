@@ -85,4 +85,8 @@ DIV inteira dos processos XPATH: //*[@id="divListaResultados"]
 
 <-------------------------------------->
 
-faca com que os tokens sejam armazenados em .txt porem quando vier um novo, nao substituir o antigo token
+modifique esse codigo possibilitando que antes de fazer a coleta dos dados, clique nesse botao com o XPATH: /html/body/div[4]/div[2]/div/div/div/mat-option[4]/span e ai sim continue a coleta
+
+botao de 100 XPATH:  /html/body/div[4]/div[2]/div/div/div/mat-option[4]/span
+botao de passar a pagina XPATH: /html/body/app-root/app-documentos-busca/div[2]/div/mat-paginator/div/div/div[2]/button[2]
+

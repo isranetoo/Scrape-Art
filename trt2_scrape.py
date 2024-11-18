@@ -121,7 +121,7 @@ class SessaoJurisprudencia:
 
         return dados
 
-    def salvar_dados_em_csv(self, dados, nome_arquivo="dados_jurisprudencia.csv"):
+    def salvar_dados_em_csv(self, dados, nome_arquivo="dados_jurisprudencia_PJE.csv"):
         """Salvar os dados coletados em um arquivo CSV"""
         try:
             with open(nome_arquivo, mode='w', newline='', encoding='utf-8') as file:
