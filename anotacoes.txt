@@ -70,6 +70,9 @@ def solve_captcha_local(th1, th2, sig1, sig2, bytes_data):
 
     faca com que ao ser uma img a ser coletada do XPATH seja a string de "src=" , que seria uma img em base64 e ja crie uma funcao que a converta em jpeg
 
+
+    /html/body/app-root/app-documentos-busca/app-captcha/div/div/div/div/form/img
+
 #<-------------------------------------->
 
         escreva o codingo Inteiro
@@ -77,6 +80,4 @@ def solve_captcha_local(th1, th2, sig1, sig2, bytes_data):
     from pdb import set_trace
     set_trace()
 
-    faca com que a coleta da imagem seja antes de "
-    Por favor, insira a solução do captcha que você vê no navegador.
-    O formato deve ser algo como 'k8fe6w' (6 caracteres)"  do capctha e salve a img   
+    faca com que a imagem seja salva so depois da resposta do capctha e use a resposta como nome da imagem seja a resposta do capctha

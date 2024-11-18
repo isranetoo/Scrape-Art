@@ -22,6 +22,7 @@ class SessaoJurisprudencia:
         self.sessao = requests.Session()
         self.token_desafio = None
         self.resposta_captcha = None
+        self.img_src = None  # Para armazenar o src da imagem CAPTCHA
 
     def configurar_browser(self):
         """Configurar o navegador Chrome com as opções apropriadas"""
@@ -52,29 +53,26 @@ class SessaoJurisprudencia:
     def obter_imagem_div(self):
         """Coletar o link da imagem do Captcha"""
         try:
-            form_element = WebDriverWait(self.browser, 30).until(
+            form_element = WebDriverWait(self.browser, 10).until(
                 EC.visibility_of_element_located((By.XPATH, '//*[@id="imagemCaptcha"]'))
             )
-            img_element = WebDriverWait(form_element, 40).until(
+            img_element = WebDriverWait(form_element, 10).until(
                 EC.presence_of_element_located((By.XPATH, '/html/body/app-root/app-documentos-busca/app-captcha/div/div/div/div/form/img'))
             )
+
             img_src = img_element.get_attribute('src')
 
             if img_src:
                 print(f"Imagem encontrada: {img_src}")
-                if img_src.startswith('data:image'):
-                    self.converter_base64_para_jpeg(img_src)
-                else:
-                    print("A imagem não é base64.")
-                return img_src
+                self.img_src = img_src  
             else:
                 print("A imagem não possui o atributo 'src'.")
-                return None
+                self.img_src = None
         except Exception as e:
             print(f"Erro ao obter a imagem: {e}")
-            return None
+            self.img_src = None
 
-    def converter_base64_para_jpeg(self, base64_string, captcha="imagem_captcha.jpeg"):
+    def converter_base64_para_jpeg(self, base64_string, captcha_nome="captcha_imagem.jpeg"):
         """Converter uma string base64 para um arquivo JPEG"""
         try:
             if base64_string.startswith('data:image'):
@@ -83,9 +81,10 @@ class SessaoJurisprudencia:
             imagem_binaria = base64.b64decode(base64_string)
 
             imagem = Image.open(BytesIO(imagem_binaria))
-
-            imagem.save(captcha, "JPEG")
-            print(f"Imagem salva como {captcha}")
+            if self.resposta_captcha:
+                captcha_nome = f"{self.resposta_captcha}.jpeg"
+            imagem.save(captcha_nome, "JPEG")
+            print(f"Imagem salva como {captcha_nome}")
         except Exception as e:
             print(f"Erro ao converter base64 para JPEG: {e}")
 
@@ -166,15 +165,13 @@ class SessaoJurisprudencia:
                 print(f"Cookie: {cookie['name']} = {cookie['value']}")
                 self.sessao.cookies.set(cookie['name'], cookie['value'])
             
-            # Coletar a imagem do CAPTCHA antes de pedir a resposta
             print("\nColetando a imagem do CAPTCHA...")
-            img_src = self.obter_imagem_div()
-            if img_src:
-                print(f"Imagem do CAPTCHA coletada: {img_src}")
+            self.obter_imagem_div()
+            if self.img_src:
+                print(f"Imagem do CAPTCHA coletada: {self.img_src}")
             else:
                 print("Falha ao coletar a imagem do CAPTCHA.")
             
-            # Aguardar o token
             print("\nAguardando o token aparecer...")
             self.token_desafio = self.aguardar_token_na_pagina()
             if self.token_desafio:
@@ -182,13 +179,14 @@ class SessaoJurisprudencia:
             else:
                 print("\nFalha ao extrair o token")
                 return
-
-            # Pedir a resposta do CAPTCHA
             print("\nPor favor, insira a solução do captcha que você vê no navegador.")
             print("O formato deve ser algo como 'k8fe6w' (6 caracteres)")
             self.resposta_captcha = input("Insira a solução do captcha: ").strip()
             
             if self.token_desafio and self.resposta_captcha:
+                if self.img_src:
+                    self.converter_base64_para_jpeg(self.img_src)
+                
                 url_final = f"{URL_DOCUMENTOS}?tokenDesafio={self.token_desafio}&resposta={self.resposta_captcha}"
                 print(f"\nFazendo requisição com URL: {url_final}")
                 resposta = self.fazer_requisicao_com_headers(url_final)
@@ -196,20 +194,17 @@ class SessaoJurisprudencia:
                 with open("resposta_token.txt", "w") as arquivo:
                     arquivo.write(f"Token: {self.token_desafio}\n")
                     arquivo.write(f"Resposta do Captcha: {self.resposta_captcha}\n")
-                    if img_src:
-                        arquivo.write(f"URL ou Base64 da Imagem do CAPTCHA: {img_src}\n")
+                    if self.img_src:
+                        arquivo.write(f"URL ou Base64 da Imagem do CAPTCHA: {self.img_src}\n")
                     if resposta:
                         arquivo.write(f"Status da Resposta: {resposta.status_code}\n")
                         arquivo.write("Cabeçalhos da Resposta:\n")
                         for chave, valor in resposta.headers.items():
                             arquivo.write(f"{chave}: {valor}\n")
-                        arquivo.write(f"Conteúdo da Resposta: {resposta.text[:500]}\n")
+                        arquivo.write(f"Conteúdo da Resposta: {resposta.text[:500]}")
+            
         except Exception as e:
-            print(f"Erro durante a sessão: {e}")
-        finally:
-            if self.browser:
-                self.browser.quit()
+            print(f"Erro ao iniciar a sessão: {e}")
 
-if __name__ == '__main__':
-    sessao = SessaoJurisprudencia()
-    sessao.iniciar_sessao()
+sessao = SessaoJurisprudencia()
+sessao.iniciar_sessao()
