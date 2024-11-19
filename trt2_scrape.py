@@ -59,23 +59,39 @@ class SessaoJurisprudencia:
         except Exception as e:
             print(f"Erro ao converter base64 para JPEG: {e}")
 
+# <------------------------------------------------------------------------>
+
     def coletar_dados_xpaths(self):
         """Coletar dados dos XPaths"""
         dados = []
+        i = 1  
         try:
-            for i in range(1, 100):
+            while True:  
                 xpath_base = f"/html/body/app-root/app-documentos-busca/div[2]/mat-list/mat-list-item[{i}]/div/div[2]"
-                dados.append([ 
-                    WebDriverWait(self.browser, 15).until(EC.visibility_of_element_located((By.XPATH, f"{xpath_base}/div[1]/h4/a"))).text, # Processo
-                    WebDriverWait(self.browser,15).until(EC.visibility_of_element_located((By.XPATH, f"{xpath_base}//div[1]/a"))).text, # Inteiro Teor
-                    WebDriverWait(self.browser, 15).until(EC.visibility_of_element_located((By.XPATH, f"{xpath_base}/p[1]"))).text, # Estágio
-                    WebDriverWait(self.browser, 15).until(EC.visibility_of_element_located((By.XPATH, f"{xpath_base}/p[2]"))).text, # Órgão
-                    WebDriverWait(self.browser, 15).until(EC.visibility_of_element_located((By.XPATH, f"{xpath_base}/p[4]"))).text # Amostras
-                ])
+                try:
+                    dados.append([
+                        WebDriverWait(self.browser, 15).until(EC.visibility_of_element_located((By.XPATH, f"{xpath_base}//div[1]/a"))).get_attribute("href"),  # Inteiro Teor Link
+                        WebDriverWait(self.browser, 15).until(EC.visibility_of_element_located((By.XPATH, f"{xpath_base}/div[1]/h4/a"))).text,  # Processo
+                        WebDriverWait(self.browser, 15).until(EC.visibility_of_element_located((By.XPATH, f"{xpath_base}/p[1]"))).text,  # Estágio
+                        WebDriverWait(self.browser, 15).until(EC.visibility_of_element_located((By.XPATH, f"{xpath_base}/p[2]"))).text,  # Órgão
+                        WebDriverWait(self.browser, 15).until(EC.visibility_of_element_located((By.XPATH, f"{xpath_base}/p[4]"))).text,  # Amostras
+                    ])
+                except Exception as e:
+                    print(f"Erro ao processar item {i}: {e}")
+                
+                i += 1  
+                if i > 100:  
+                    i = 1  
+                    print("Reiniciando coleta...")
+                    
+               
+                if len(dados) >= 100:  
+                    break
         except Exception as e:
             print(f"Erro ao coletar dados: {e}")
         return dados
 
+# <------------------------------------------------------------------------>
 
     def salvar_dados_em_csv(self, dados, nome_arquivo="dados_jurisprudencia_PJE.csv"):
         """Salvar dados em CSV"""
@@ -161,21 +177,23 @@ class SessaoJurisprudencia:
             print(f"Erro ao clicar no botão 100: {e}")
 
 # <------------------------------------------------------------------------>
+    def clicar_botao_seguinte(self):
+        """Esperar o botão Seguinte ser clicado 5 vezes"""
+        botao_seguinte_xpath = "/html/body/app-root/app-documentos-busca/div[2]/div/mat-paginator/div/div/div[2]/button[2]"
+        
+        for tentativa in range(5):  # Limitar o clique a 5 vezes
+            try:
+                botao_seguinte = WebDriverWait(self.browser, 60).until(
+                    EC.element_to_be_clickable((By.XPATH, botao_seguinte_xpath))
+                )
 
-    def clicar_botao_seguinte(sefl):
-        """Eperar o botão Seguinte a ser clicado"""
-        try:
-            botao_seguinte_xpath = "/html/body/app-root/app-documentos-busca/div[2]/div/mat-paginator/div/div/div[2]/button[2]"
-            botao_seguinte = WebDriverWait(sefl.browser, 60).until(
-                EC.element_to_be_clickable((By.XPATH, botao_seguinte_xpath))
-            )
+                time.sleep(15)  # Aguarde 5 segundos antes de clicar
+                botao_seguinte.click()
+                print(f"Botão 'Seguinte' clicado {tentativa + 1} vez(es).")
+            except Exception as e:
+                print(f"Erro ao clicar no botão 'Seguinte' na tentativa {tentativa + 1}: {e}")
+                break  # Caso ocorra erro, interrompa o loop
 
-            time.sleep(8)
-
-            botao_seguinte.click()
-            print(f"Botão seguinte clicado.")
-        except Exception as e:
-            print(f"Erro ao clicar no botão seguinte")
 
 # <------------------------------------------------------------------------>    
 
