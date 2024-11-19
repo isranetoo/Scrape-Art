@@ -79,7 +79,7 @@ class SessaoJurisprudencia:
                     print(f"Erro ao processar item {i}: {e}")
                 
                 i += 1  
-                if i > 99:  
+                if i > 100:  
                     i = 1  
                     print("Reiniciando coleta...")
                     
@@ -93,7 +93,7 @@ class SessaoJurisprudencia:
         """Salvar dados em CSV sem sobrescrever"""
         try:
             with open(nome_arquivo, 'a', newline='', encoding='utf-8') as file:  
-                writer = csv.writer(file)
+                writer = csv.writer(file, delimiter=';')
                 if file.tell() == 0: 
                     writer.writerow(['Inteiro Teor','Título', 'Estágio', 'Órgão', 'Amostras'])
                 writer.writerows(self.dados_coletados)
@@ -210,7 +210,7 @@ class SessaoJurisprudencia:
                 
                 self.esperar_e_clicar_botao()
 
-                for _ in range(5):  
+                for _ in range(2):  
                     dados = self.coletar_dados_xpaths()
                     self.dados_coletados.extend(dados)  
                     self.clicar_botao_seguinte()  
