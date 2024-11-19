@@ -134,6 +134,15 @@ class SessaoJurisprudencia:
                 print(f"Erro ao aguardar token: {e}")
         print("Tempo esgotado aguardando token")
         return None
+    
+    # <-------------------->
+    """
+        def ultimos_digitos_token(self, timeout=30):
+            #Pegando o resultado do Captcha
+
+            #url_token
+    """
+    # <-------------------->
 
     def obter_requisicoes_rede(self):
         """Obter requisições contendo 'tokenDesafio'"""
