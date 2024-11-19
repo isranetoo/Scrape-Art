@@ -12,7 +12,7 @@ from matplotlib.widgets import Slider, Button
 
 
 files = './images/'
-img = "3f9jjw.png"
+img = "4fw64r.jpeg"
 with open(f"{files}{img}", "rb") as bytes_data:
     original = Image.open(BytesIO(bytes_data.read()))
 
