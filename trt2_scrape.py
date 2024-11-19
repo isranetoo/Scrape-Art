@@ -135,15 +135,6 @@ class SessaoJurisprudencia:
         print("Tempo esgotado aguardando token")
         return None
     
-    # <-------------------->
-    """
-        def ultimos_digitos_token(self, timeout=30):
-            #Pegando o resultado do Captcha
-
-            #url_token
-    """
-    # <-------------------->
-
     def obter_requisicoes_rede(self):
         """Obter requisições contendo 'tokenDesafio'"""
         try:
@@ -156,6 +147,15 @@ class SessaoJurisprudencia:
         except Exception as e:
             print(f"Erro ao obter requisições: {e}")
         return None
+    
+        # <-------------------->
+    """
+        def ultimos_digitos_token(self, timeout=30):
+            #Pegando o resultado do Captcha
+
+            #url_token
+    """
+    # <-------------------->
 
     def clicar_botao(self):
         """Botão a ser clicado primeiro"""
