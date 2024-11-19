@@ -13,7 +13,7 @@ from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from urllib.parse import urlparse, parse_qs
 
-# URLs base
+
 URL_BASE = 'https://pje.trt2.jus.br/jurisprudencia/'
 URL_DOCUMENTOS = 'https://pje.trt2.jus.br/juris-backend/api/documentos'
 
@@ -24,9 +24,10 @@ class SessaoJurisprudencia:
         self.token_desafio = None
         self.resposta_captcha = None
         self.img_src = None
+        self.dados_coletados = []  
 
     def configurar_browser(self):
-        """configurar o navegador Chrome"""
+        """Configurar o navegador Chrome"""
         opcoes = webdriver.ChromeOptions()
         opcoes.add_argument('--start-maximized')
         opcoes.add_argument('--ignore-certificate-errors')
@@ -35,7 +36,7 @@ class SessaoJurisprudencia:
         self.browser = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=opcoes)
 
     def obter_imagem_div(self):
-        """obter link da imagem do Captcha"""
+        """Obter link da imagem do Captcha"""
         try:
             form = WebDriverWait(self.browser, 30).until(
                 EC.visibility_of_element_located((By.XPATH, '//*[@id="imagemCaptcha"]'))
@@ -59,8 +60,6 @@ class SessaoJurisprudencia:
         except Exception as e:
             print(f"Erro ao converter base64 para JPEG: {e}")
 
-# <------------------------------------------------------------------------>
-
     def coletar_dados_xpaths(self):
         """Coletar dados dos XPaths"""
         dados = []
@@ -80,26 +79,24 @@ class SessaoJurisprudencia:
                     print(f"Erro ao processar item {i}: {e}")
                 
                 i += 1  
-                if i > 100:  
+                if i > 99:  
                     i = 1  
                     print("Reiniciando coleta...")
                     
-               
                 if len(dados) >= 100:  
                     break
         except Exception as e:
             print(f"Erro ao coletar dados: {e}")
         return dados
 
-# <------------------------------------------------------------------------>
-
-    def salvar_dados_em_csv(self, dados, nome_arquivo="dados_jurisprudencia_PJE.csv"):
-        """Salvar dados em CSV"""
+    def salvar_dados_em_csv(self, nome_arquivo="dados_jurisprudencia_PJE.csv"):
+        """Salvar dados em CSV sem sobrescrever"""
         try:
-            with open(nome_arquivo, 'w', newline='', encoding='utf-8') as file:
+            with open(nome_arquivo, 'a', newline='', encoding='utf-8') as file:  
                 writer = csv.writer(file)
-                writer.writerow(['Inteiro Teor','Título', 'Estágio', 'Órgão', 'Amostras',])
-                writer.writerows(dados)
+                if file.tell() == 0: 
+                    writer.writerow(['Inteiro Teor','Título', 'Estágio', 'Órgão', 'Amostras'])
+                writer.writerows(self.dados_coletados)
             print(f"Dados salvos em {nome_arquivo}")
         except Exception as e:
             print(f"Erro ao salvar dados em CSV: {e}")
@@ -151,18 +148,17 @@ class SessaoJurisprudencia:
             print(f"Erro ao obter requisições: {e}")
         return None
 
-    def clicar_botao (self):
+    def clicar_botao(self):
         """Botão a ser clicado primeiro"""
         try:
             botao_primeiro_xpath = "/html/body/app-root/app-documentos-busca/div[2]/div/mat-paginator/div/div/div[1]/mat-form-field/div/div[1]/div/mat-select/div/div[2]"
-            botao_primeiro = WebDriverWait (self.browser,20).until(
-                EC.element_to_be_clickable((By.XPATH,botao_primeiro_xpath))
+            botao_primeiro = WebDriverWait(self.browser, 20).until(
+                EC.element_to_be_clickable((By.XPATH, botao_primeiro_xpath))
             )
             botao_primeiro.click()
             print(f"Botão clicado.")
         except Exception as e: 
             print(f"Erro ao clicar no Botão:")
-
 
     def esperar_e_clicar_botao(self):
         """Esperar pelo clique do botão depois de capturar a resposta do captcha"""
@@ -176,28 +172,21 @@ class SessaoJurisprudencia:
         except Exception as e:
             print(f"Erro ao clicar no botão 100: {e}")
 
-# <------------------------------------------------------------------------>
     def clicar_botao_seguinte(self):
-        """Esperar o botão Seguinte ser clicado 5 vezes"""
+        """Esperar o botão Seguinte ser clicado várias vezes"""
         botao_seguinte_xpath = "/html/body/app-root/app-documentos-busca/div[2]/div/mat-paginator/div/div/div[2]/button[2]"
         
-        for tentativa in range(5):  # Limitar o clique a 5 vezes
+        for tentativa in range(5):  
             try:
-                botao_seguinte = WebDriverWait(self.browser, 60).until(
+                botao_seguinte = WebDriverWait(self.browser, 10).until(
                     EC.element_to_be_clickable((By.XPATH, botao_seguinte_xpath))
                 )
-
-                time.sleep(15)  # Aguarde 5 segundos antes de clicar
                 botao_seguinte.click()
-                print(f"Botão 'Seguinte' clicado {tentativa + 1} vez(es).")
+                print(f"Clicando no botão 'Seguinte' tentativa {tentativa+1}")
+                break
             except Exception as e:
-                print(f"Erro ao clicar no botão 'Seguinte' na tentativa {tentativa + 1}: {e}")
-                break  # Caso ocorra erro, interrompa o loop
-
-
-# <------------------------------------------------------------------------>    
-
-
+                print(f"Erro ao clicar no botão 'Seguinte' tentativa {tentativa+1}: {e}")
+        
     def iniciar_sessao(self):
         """Iniciar a sessão no navegador"""
         try:
@@ -208,17 +197,28 @@ class SessaoJurisprudencia:
             cookies = self.browser.get_cookies()
             for cookie in cookies:
                 self.sessao.cookies.set(cookie['name'], cookie['value'])
+            
             self.obter_imagem_div()
             self.token_desafio = self.aguardar_token_na_pagina()
+            
             if self.token_desafio:
                 self.resposta_captcha = input("Insira a solução do captcha: ").strip()
+                
                 if self.img_src:
                     self.converter_base64_para_jpeg(self.img_src)
                     self.clicar_botao()    
+                
                 self.esperar_e_clicar_botao()
-                self.clicar_botao_seguinte()  
-                resposta = self.fazer_requisicao_com_headers(f"{URL_DOCUMENTOS}?tokenDesafio={self.token_desafio}&resposta={self.resposta_captcha}")
-                self.salvar_dados_em_csv(self.coletar_dados_xpaths())
+
+                for _ in range(5):  
+                    dados = self.coletar_dados_xpaths()
+                    self.dados_coletados.extend(dados)  
+                    self.clicar_botao_seguinte()  
+                    time.sleep(2)  
+                
+               
+                self.salvar_dados_em_csv() 
+        
         except Exception as e:
             print(f"Erro ao iniciar a sessão: {e}")
 
