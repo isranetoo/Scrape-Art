@@ -76,12 +76,13 @@ class SessaoJurisprudencia:
             print(f"Erro ao coletar dados: {e}")
         return dados
 
+
     def salvar_dados_em_csv(self, dados, nome_arquivo="dados_jurisprudencia_PJE.csv"):
         """Salvar dados em CSV"""
         try:
             with open(nome_arquivo, 'w', newline='', encoding='utf-8') as file:
                 writer = csv.writer(file)
-                writer.writerow(['Título','Inteiro Teor', 'Estágio', 'Órgão', 'Amostras'])
+                writer.writerow(['Inteiro Teor','Título', 'Estágio', 'Órgão', 'Amostras',])
                 writer.writerows(dados)
             print(f"Dados salvos em {nome_arquivo}")
         except Exception as e:
@@ -151,7 +152,7 @@ class SessaoJurisprudencia:
         """Esperar pelo clique do botão depois de capturar a resposta do captcha"""
         try:  
             botao_xpath = "/html/body/div[3]/div[2]/div/div/div/mat-option[4]/span"
-            botao = WebDriverWait(self.browser, 35).until(
+            botao = WebDriverWait(self.browser, 20).until(
                 EC.element_to_be_clickable((By.XPATH, botao_xpath))
             )
             botao.click()
@@ -161,17 +162,20 @@ class SessaoJurisprudencia:
 
 # <------------------------------------------------------------------------>
 
-    """def clicar_botao_seguinte(sefl):
-        ""Eperar o botão Seguinte a ser clicado""
+    def clicar_botao_seguinte(sefl):
+        """Eperar o botão Seguinte a ser clicado"""
         try:
             botao_seguinte_xpath = "/html/body/app-root/app-documentos-busca/div[2]/div/mat-paginator/div/div/div[2]/button[2]"
             botao_seguinte = WebDriverWait(sefl.browser, 60).until(
                 EC.element_to_be_clickable((By.XPATH, botao_seguinte_xpath))
             )
+
+            time.sleep(8)
+
             botao_seguinte.click()
             print(f"Botão seguinte clicado.")
         except Exception as e:
-            print(f"Erro ao clicar no botão seguinte")"""
+            print(f"Erro ao clicar no botão seguinte")
 
 # <------------------------------------------------------------------------>    
 
@@ -194,7 +198,7 @@ class SessaoJurisprudencia:
                     self.converter_base64_para_jpeg(self.img_src)
                     self.clicar_botao()    
                 self.esperar_e_clicar_botao()
-                #self.clicar_botao_seguinte()  
+                self.clicar_botao_seguinte()  
                 resposta = self.fazer_requisicao_com_headers(f"{URL_DOCUMENTOS}?tokenDesafio={self.token_desafio}&resposta={self.resposta_captcha}")
                 self.salvar_dados_em_csv(self.coletar_dados_xpaths())
         except Exception as e:
