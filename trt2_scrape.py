@@ -26,7 +26,7 @@ class SessaoJurisprudencia:
         self.img_src = None
 
     def configurar_browser(self):
-        """Configurar o navegador Chrome"""
+        """configurar o navegador Chrome"""
         opcoes = webdriver.ChromeOptions()
         opcoes.add_argument('--start-maximized')
         opcoes.add_argument('--ignore-certificate-errors')
@@ -35,7 +35,7 @@ class SessaoJurisprudencia:
         self.browser = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=opcoes)
 
     def obter_imagem_div(self):
-        """Obter link da imagem do Captcha"""
+        """obter link da imagem do Captcha"""
         try:
             form = WebDriverWait(self.browser, 30).until(
                 EC.visibility_of_element_located((By.XPATH, '//*[@id="imagemCaptcha"]'))
@@ -63,13 +63,14 @@ class SessaoJurisprudencia:
         """Coletar dados dos XPaths"""
         dados = []
         try:
-            for i in range(1, 20):
+            for i in range(1, 100):
                 xpath_base = f"/html/body/app-root/app-documentos-busca/div[2]/mat-list/mat-list-item[{i}]/div/div[2]"
                 dados.append([ 
-                    WebDriverWait(self.browser, 15).until(EC.visibility_of_element_located((By.XPATH, f"{xpath_base}/div[1]/h4/a"))).text,
-                    WebDriverWait(self.browser, 15).until(EC.visibility_of_element_located((By.XPATH, f"{xpath_base}/p[1]"))).text,
-                    WebDriverWait(self.browser, 15).until(EC.visibility_of_element_located((By.XPATH, f"{xpath_base}/p[2]"))).text,
-                    WebDriverWait(self.browser, 15).until(EC.visibility_of_element_located((By.XPATH, f"{xpath_base}/p[4]"))).text
+                    WebDriverWait(self.browser, 15).until(EC.visibility_of_element_located((By.XPATH, f"{xpath_base}/div[1]/h4/a"))).text, # Processo
+                    WebDriverWait(self.browser,15).until(EC.visibility_of_element_located((By.XPATH, f"{xpath_base}//div[1]/a"))).text, # Inteiro Teor
+                    WebDriverWait(self.browser, 15).until(EC.visibility_of_element_located((By.XPATH, f"{xpath_base}/p[1]"))).text, # Estágio
+                    WebDriverWait(self.browser, 15).until(EC.visibility_of_element_located((By.XPATH, f"{xpath_base}/p[2]"))).text, # Órgão
+                    WebDriverWait(self.browser, 15).until(EC.visibility_of_element_located((By.XPATH, f"{xpath_base}/p[4]"))).text # Amostras
                 ])
         except Exception as e:
             print(f"Erro ao coletar dados: {e}")
@@ -80,7 +81,7 @@ class SessaoJurisprudencia:
         try:
             with open(nome_arquivo, 'w', newline='', encoding='utf-8') as file:
                 writer = csv.writer(file)
-                writer.writerow(['Título', 'Estágio', 'Órgão', 'Amostras'])
+                writer.writerow(['Título','Inteiro Teor', 'Estágio', 'Órgão', 'Amostras'])
                 writer.writerows(dados)
             print(f"Dados salvos em {nome_arquivo}")
         except Exception as e:
@@ -133,18 +134,47 @@ class SessaoJurisprudencia:
             print(f"Erro ao obter requisições: {e}")
         return None
 
+    def clicar_botao (self):
+        """Botão a ser clicado primeiro"""
+        try:
+            botao_primeiro_xpath = "/html/body/app-root/app-documentos-busca/div[2]/div/mat-paginator/div/div/div[1]/mat-form-field/div/div[1]/div/mat-select/div/div[2]"
+            botao_primeiro = WebDriverWait (self.browser,20).until(
+                EC.element_to_be_clickable((By.XPATH,botao_primeiro_xpath))
+            )
+            botao_primeiro.click()
+            print(f"Botão clicado.")
+        except Exception as e: 
+            print(f"Erro ao clicar no Botão:")
+
+
     def esperar_e_clicar_botao(self):
         """Esperar pelo clique do botão depois de capturar a resposta do captcha"""
-        try:
-            
-            botao_xpath = "/html/body/div[3]/div[2]/div/div/div/mat-option[4]"
-            botao = WebDriverWait(self.browser, 15).until(
+        try:  
+            botao_xpath = "/html/body/div[3]/div[2]/div/div/div/mat-option[4]/span"
+            botao = WebDriverWait(self.browser, 35).until(
                 EC.element_to_be_clickable((By.XPATH, botao_xpath))
             )
             botao.click()
-            print("Botão clicado.")
+            print("Botão 100 clicado.")
         except Exception as e:
-            print(f"Erro ao clicar no botão: {e}")
+            print(f"Erro ao clicar no botão 100: {e}")
+
+# <------------------------------------------------------------------------>
+
+    """def clicar_botao_seguinte(sefl):
+        ""Eperar o botão Seguinte a ser clicado""
+        try:
+            botao_seguinte_xpath = "/html/body/app-root/app-documentos-busca/div[2]/div/mat-paginator/div/div/div[2]/button[2]"
+            botao_seguinte = WebDriverWait(sefl.browser, 60).until(
+                EC.element_to_be_clickable((By.XPATH, botao_seguinte_xpath))
+            )
+            botao_seguinte.click()
+            print(f"Botão seguinte clicado.")
+        except Exception as e:
+            print(f"Erro ao clicar no botão seguinte")"""
+
+# <------------------------------------------------------------------------>    
+
 
     def iniciar_sessao(self):
         """Iniciar a sessão no navegador"""
@@ -162,7 +192,9 @@ class SessaoJurisprudencia:
                 self.resposta_captcha = input("Insira a solução do captcha: ").strip()
                 if self.img_src:
                     self.converter_base64_para_jpeg(self.img_src)
-                self.esperar_e_clicar_botao()  
+                    self.clicar_botao()    
+                self.esperar_e_clicar_botao()
+                #self.clicar_botao_seguinte()  
                 resposta = self.fazer_requisicao_com_headers(f"{URL_DOCUMENTOS}?tokenDesafio={self.token_desafio}&resposta={self.resposta_captcha}")
                 self.salvar_dados_em_csv(self.coletar_dados_xpaths())
         except Exception as e:
