@@ -43,14 +43,12 @@ GET
 Status Code:
 200 OK
 
-
 <--------------------------------------> 
 
 Random Forest
 
 <--------------------------------------> 
    
-
     https://gist.github.com/spirkaa/4c3b8ad8fd34324bd307
 
     /html/body/app-root/app-documentos-busca/app-captcha/div/div/div/div/form/img
@@ -88,8 +86,5 @@ botao de passar a pagina XPATH: /html/body/app-root/app-documentos-busca/div[2]/
 
 faca com que a coleta de dados seja continuada logo apos o botao_seguinte seja clicado e continue fazendo isso:
 
-
-
-
-relator:        /html/body/app-root/app-documentos-busca/div[2]/mat-list/mat-list-item[4]/div/div[2]/p[2] , /html/body/app-root/app-documentos-busca/div[2]/mat-list/mat-list-item[4]/div/div[2]/p[2]
-orgao julgador: /html/body/app-root/app-documentos-busca/div[2]/mat-list/mat-list-item[3]/div/div[2]/p[2] , /html/body/app-root/app-documentos-busca/div[2]/mat-list/mat-list-item[3]/div/div[2]/p[2]
+relator: /html/body/app-root/app-documentos-busca/div[2]/mat-list/mat-list-item[4]/div/div[2]/p[2]
+orgao julgador: /html/body/app-root/app-documentos-busca/div[2]/mat-list/mat-list-item[3]/div/div[2]/p[2]
