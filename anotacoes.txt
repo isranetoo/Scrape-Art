@@ -88,3 +88,36 @@ faca com que a coleta de dados seja continuada logo apos o botao_seguinte seja c
 
 relator: /html/body/app-root/app-documentos-busca/div[2]/mat-list/mat-list-item[4]/div/div[2]/p[2]
 orgao julgador: /html/body/app-root/app-documentos-busca/div[2]/mat-list/mat-list-item[3]/div/div[2]/p[2]
+
+
+## /html/body/app-root/app-documentos-busca/div[1]/mat-card[3]/mat-card-content/app-mat-search-select[5]/div/mat-form-field/div/div[1]/div/mat-select/div/div[1]/span/mat-select-trigger
+
+
+ASSUNTO: 
+
+processo: /html/body/app-root/app-documentos-busca/div[2]/mat-list/mat-list-item[1]/div/div[2]/div[1]/h4/a
+estagio: /html/body/app-root/app-documentos-busca/div[2]/mat-list/mat-list-item[1]/div/div[2]/p[1]
+orgao julgador: /html/body/app-root/app-documentos-busca/div[2]/mat-list/mat-list-item[1]/div/div[2]/p[2]
+interior Teor link: /html/body/app-root/app-documentos-busca/div[2]/mat-list/mat-list-item[1]/div/div[2]/div[1]/a
+
+ASSUNTO LIVRE: 
+
+processo: /html/body/app-root/app-documentos-busca/div[2]/mat-list/mat-list-item[1]/div/div[2]/div[1]/h4/a
+estagio: /html/body/app-root/app-documentos-busca/div[2]/mat-list/mat-list-item[1]/div/div[2]/p[1]
+orgao julgador: /html/body/app-root/app-documentos-busca/div[2]/mat-list/mat-list-item[1]/div/div[2]/p[2]
+interior Teor Link: /html/body/app-root/app-documentos-busca/div[2]/mat-list/mat-list-item[1]/div/div[2]/p[4]/span
+
+<-------------------------------------->
+
+botao do assunto: 
+
+primeiro click: /html/body/app-root/app-documentos-busca/div/mat-card[3]/mat-card-content/app-mat-search-select[5]/div/mat-form-field/div/div[1]/div/mat-select/div
+botao de check: /html/body/div[4]/div[2]/div/div/div/mat-option[2]/mat-pseudo-checkbox
+                /html/body/div[4]/div[2]/div/div/div/mat-option[3]
+                /html/body/div[4]/div[2]/div/div/div/mat-option[41]
+
+<-------------------------------------->
+
+faca com que quando coletar o token da pagina pegue os ultimes 6 digitos e use esses 6 digitos como a resposta do captcha e salve o nome da imagem com esses 6 ultimos digitos por exemplo  https://pje.trt2.jus.br/juris-backend/api/documentos?tokenDesafio=68fce7527b41b0114004a08d287c0ffbe67603bc5868862717cb49e3579cc6ff52ca40c8d2869daa9e090032d8d0db4710338c6724cfb0161afa7b3e2025c731ca4a368852b89139f3854d82e4423555a4e35ec7a58eb22fd3d75ec6630d7dbb&resposta=xu27hx 
+retire "xu27hx" e use isso como a resposta e o nome da imagem salva:  
+

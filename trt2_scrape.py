@@ -50,7 +50,7 @@ class SessaoJurisprudencia:
             print(f"Erro ao obter a imagem: {e}")
 
     def converter_base64_para_jpeg(self, base64_string, captcha_nome="captcha_imagem.jpeg"):
-        """Converter base64 para JPEG"""
+        """Converter base64 para JPEG e salvar com nome baseado no captcha"""
         try:
             base64_string = base64_string.split(',')[1] if base64_string.startswith('data:image') else base64_string
             imagem = Image.open(BytesIO(base64.b64decode(base64_string)))
@@ -118,7 +118,7 @@ class SessaoJurisprudencia:
             print(f"Erro na requisição: {e}")
 
     def aguardar_token_na_pagina(self, timeout=30):
-        """Aguardar e extrair token"""
+        """Aguardar e extrair token e processar resposta do captcha"""
         inicio = time.time()
         while time.time() - inicio < timeout:
             try:
@@ -128,7 +128,15 @@ class SessaoJurisprudencia:
                 url_token = self.obter_requisicoes_rede()
                 if url_token:
                     parametros = parse_qs(urlparse(url_token).query)
-                    return parametros.get('tokenDesafio', [None])[0]
+                    token = parametros.get('tokenDesafio', [None])[0]
+                    if token:
+                        self.token_desafio = token
+                        self.resposta_captcha = url_token[-6:]
+                        print(f"Token coletado: {token}")
+                        print(f"Resposta do captcha (últimos 6 dígitos): {self.resposta_captcha}")
+                        return token
+                    else:
+                        print("TokenDesafio não encontrado nos parâmetros da URL.")
                 time.sleep(1)
             except Exception as e:
                 print(f"Erro ao aguardar token: {e}")
@@ -148,15 +156,6 @@ class SessaoJurisprudencia:
             print(f"Erro ao obter requisições: {e}")
         return None
     
-        # <-------------------->
-    """
-        def ultimos_digitos_token(self, timeout=30):
-            #Pegando o resultado do Captcha
-
-            #url_token
-    """
-    # <-------------------->
-
     def clicar_botao(self):
         """Botão a ser clicado primeiro"""
         try:
@@ -211,7 +210,6 @@ class SessaoJurisprudencia:
             self.token_desafio = self.aguardar_token_na_pagina()
             
             if self.token_desafio:
-                self.resposta_captcha = input("Insira a solução do captcha: ").strip()
                 
                 if self.img_src:
                     self.converter_base64_para_jpeg(self.img_src)
