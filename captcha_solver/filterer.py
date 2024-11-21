@@ -11,7 +11,7 @@ from pylab import axes, ylabel, xlabel, subplot, draw, show, imshow
 from matplotlib.widgets import Slider, Button
 
 
-files = './images/'
+files = './images'
 img = "4fw64r.jpeg"
 with open(f"{files}{img}", "rb") as bytes_data:
     original = Image.open(BytesIO(bytes_data.read()))

@@ -44,16 +44,16 @@ def solve_captcha_local(th1, th2, sig1, sig2, bytes_data):
     return number
 
 # Caminho para a pasta de imagens
-files = './images'  # Altere para o caminho correto da sua pasta
+files = './images/'  # Altere para o caminho correto da sua pasta
 
 # Dicionário para armazenar os resultados
 res = {}
 
 # Loop para testar diferentes combinações de parâmetros
-for p1 in range(100, 200, 5):
-    for p2 in range(100, 200, 5):
-        for p3 in [0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7]:
-            for p4 in [0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7]:
+for p1 in range(185, 190, 5):
+    for p2 in range(145, 160, 5):
+        for p3 in [1.0, 1.1, 1.2, 1.3,]:
+            for p4 in [  1.0, 1.1, 1.2, 1.3, 1.4, 1.5,]:
 
                 score = {}
                 # Verifica todos os arquivos na pasta de imagens

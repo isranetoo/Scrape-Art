@@ -113,9 +113,10 @@ interior Teor Link: /html/body/app-root/app-documentos-busca/div[2]/mat-list/mat
 botao do assunto: 
 
 primeiro click: /html/body/app-root/app-documentos-busca/div/mat-card[3]/mat-card-content/app-mat-search-select[5]/div/mat-form-field/div/div[1]/div/mat-select/div
-botao de check: /html/body/div[4]/div[2]/div/div/div/mat-option[2]/mat-pseudo-checkbox
+botao de check: /html/body/div[4]/div[2]/div/div/div/mat-option[2]
                 /html/body/div[4]/div[2]/div/div/div/mat-option[3]
                 /html/body/div[4]/div[2]/div/div/div/mat-option[41]
+Botão de pesquisar: /html/body/app-root/app-documentos-busca/div[1]/mat-card[1]/mat-card-content/div/button[1]
 
 <-------------------------------------->
 /html/body/app-root/app-documentos-busca/div[2]/mat-list/mat-list-item[2]/div/div[2]/p[4]/span
@@ -128,5 +129,6 @@ botao de check: /html/body/div[4]/div[2]/div/div/div/mat-option[2]/mat-pseudo-ch
 /html/body/app-root/app-documentos-busca/div/mat-card[1]/mat-card-content/div/button[1]
 
 
-faca com que o codigo clique nesse item "/html/body/app-root/app-documentos-busca/div/mat-card[3]/mat-card-content/app-mat-search-select[4]/div/mat-form-field/div/div[1]/div/mat-select/div/div[2]"
-e depois nesse "/html/body/div[4]/div[2]/div/div/div/mat-option[2]/mat-pseudo-checkbox" e pressione o botao "/html/body/app-root/app-documentos-busca/div/mat-card[1]/mat-card-content/div/button[1]" ai sim a coleta de dados pode comecar:
+
+with open("Tester.py") as file:
+    exec(file.read())
