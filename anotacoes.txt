@@ -106,6 +106,7 @@ processo: /html/body/app-root/app-documentos-busca/div[2]/mat-list/mat-list-item
 estagio: /html/body/app-root/app-documentos-busca/div[2]/mat-list/mat-list-item[1]/div/div[2]/p[1]
 orgao julgador: /html/body/app-root/app-documentos-busca/div[2]/mat-list/mat-list-item[1]/div/div[2]/p[2]
 interior Teor Link: /html/body/app-root/app-documentos-busca/div[2]/mat-list/mat-list-item[1]/div/div[2]/p[4]/span
+                    /html/body/app-root/app-documentos-busca/div[2]/mat-list/mat-list-item[1]/div/div[2]/p[5]/span
 
 <-------------------------------------->
 
@@ -117,7 +118,15 @@ botao de check: /html/body/div[4]/div[2]/div/div/div/mat-option[2]/mat-pseudo-ch
                 /html/body/div[4]/div[2]/div/div/div/mat-option[41]
 
 <-------------------------------------->
+/html/body/app-root/app-documentos-busca/div[2]/mat-list/mat-list-item[2]/div/div[2]/p[4]/span
+/html/body/app-root/app-documentos-busca/div[2]/mat-list/mat-list-item[2]/div/div[2]/p[4]
 
-faca com que quando coletar o token da pagina pegue os ultimes 6 digitos e use esses 6 digitos como a resposta do captcha e salve o nome da imagem com esses 6 ultimos digitos por exemplo  https://pje.trt2.jus.br/juris-backend/api/documentos?tokenDesafio=68fce7527b41b0114004a08d287c0ffbe67603bc5868862717cb49e3579cc6ff52ca40c8d2869daa9e090032d8d0db4710338c6724cfb0161afa7b3e2025c731ca4a368852b89139f3854d82e4423555a4e35ec7a58eb22fd3d75ec6630d7dbb&resposta=xu27hx 
-retire "xu27hx" e use isso como a resposta e o nome da imagem salva:  
 
+/html/body/app-root/app-documentos-busca/div/mat-card[3]/mat-card-content/app-mat-search-select[4]/div/mat-form-field/div/div[1]/div/mat-select/div/div[2]
+/html/body/div[4]/div[2]/div/div/div/mat-option[2]/mat-pseudo-checkbox
+/html/body/div[4]/div[2]/div/div/div/mat-option[57]/mat-pseudo-checkbox
+/html/body/app-root/app-documentos-busca/div/mat-card[1]/mat-card-content/div/button[1]
+
+
+faca com que o codigo clique nesse item "/html/body/app-root/app-documentos-busca/div/mat-card[3]/mat-card-content/app-mat-search-select[4]/div/mat-form-field/div/div[1]/div/mat-select/div/div[2]"
+e depois nesse "/html/body/div[4]/div[2]/div/div/div/mat-option[2]/mat-pseudo-checkbox" e pressione o botao "/html/body/app-root/app-documentos-busca/div/mat-card[1]/mat-card-content/div/button[1]" ai sim a coleta de dados pode comecar:

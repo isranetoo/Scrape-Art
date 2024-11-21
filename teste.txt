@@ -60,6 +60,26 @@ class SessaoJurisprudencia:
         except Exception as e:
             print(f"Erro ao converter base64 para JPEG: {e}")
 
+    def get_samples(self, xpath_base):
+        """Safely retrieve samples, return empty string if not found"""
+        try:
+            try:
+                samples = WebDriverWait(self.browser, 2).until(
+                    EC.visibility_of_element_located((By.XPATH, f"{xpath_base}/p[4]"))
+                ).text
+                return samples
+            except:
+                paragrafos = self.browser.find_elements(By.XPATH, f"{xpath_base}/p")
+                if len(paragrafos) < 4:
+                    return ""
+                for paragrafo in paragrafos:
+                    texto = paragrafo.text.strip()
+                    if texto:
+                        return texto
+                return ""
+        except Exception:
+            return ""
+
     def coletar_dados_xpaths(self):
         """Coletar dados dos XPaths"""
         dados = []
@@ -73,7 +93,7 @@ class SessaoJurisprudencia:
                         WebDriverWait(self.browser, 15).until(EC.visibility_of_element_located((By.XPATH, f"{xpath_base}/div[1]/h4/a"))).text,  # Processo
                         WebDriverWait(self.browser, 15).until(EC.visibility_of_element_located((By.XPATH, f"{xpath_base}/p[1]"))).text,  # Estágio
                         WebDriverWait(self.browser, 15).until(EC.visibility_of_element_located((By.XPATH, f"{xpath_base}/p[2]"))).text,  # Órgão
-                        #WebDriverWait(self.browser, 15).until(EC.visibility_of_element_located((By.XPATH, f"{xpath_base}/p[4]"))).text,  # Amostras
+                        self.get_samples(xpath_base)  # Amostras
                     ])
                 except Exception as e:
                     print(f"Erro ao processar item {i}: {e}")
@@ -166,7 +186,7 @@ class SessaoJurisprudencia:
             botao_primeiro.click()
             print(f"Botão clicado.")
         except Exception as e: 
-            print(f"Erro ao clicar no Botão:")
+            print(f"Erro ao clicar no Botão: {e}")
 
     def esperar_e_clicar_botao(self):
         """Esperar pelo clique do botão depois de capturar a resposta do captcha"""
