@@ -129,10 +129,11 @@ Botão de pesquisar: /html/body/app-root/app-documentos-busca/div[1]/mat-card[1]
 /html/body/app-root/app-documentos-busca/div/mat-card[1]/mat-card-content/div/button[1]
 
 
-crie a funcao def input_captcha(self):
+faça com que a funcao "rodar_captcha" comece no momento que coletar a imagen em bsa64 e ja de a resposta para a funcao def input_captcha(self):
         """Colocando a resposta no Input"""
         self.resposta_captcha
 possibilitando que quando esse item aparecer na tela escreva a resposta obitida de self.resposta_captcha
+faça com que a reposta do rodar_captcha seja inserida no input antes que comece a coleta de dados e antes dos cliques 
 
 form do captcha: /html/body/app-root/app-documentos-busca/app-captcha/div/div/div/div/form/mat-form-field/div/div[1]/div/input     
 resposta_esperada = "WKMF9B"  

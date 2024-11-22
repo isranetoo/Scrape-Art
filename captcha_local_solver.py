@@ -63,6 +63,6 @@ def solve_captcha_local(bytes_data):
 
 
 if __name__ == "__main__":
-    with open("images/captcha_img.jpeg", "rb") as image_file:
+    with open("images/captcha_imagem.jpeg", "rb") as image_file:
         image_data = base64.b64encode(image_file.read()).decode('utf-8')
     print(solve_captcha_local(image_data))

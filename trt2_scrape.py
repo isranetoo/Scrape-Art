@@ -72,17 +72,27 @@ class SessaoJurisprudencia:
             print(f"Erro ao converter base64 para JPEG: {e}")
 
     def rodar_captcha(self, base64_string):
-        """Executa o script do Captcha"""
-        try: 
+        """Executa o script do Captcha e preenche o campo de input com a resposta"""
+        try:
             base64_string = base64_string.split(',')[1] if base64_string.startswith('data:image') else base64_string
-            self.resposta_captcha = solve_captcha_local(base64_string)  
-            print(f"Resposta do captcha obtida: {self.resposta_captcha}")          
+            self.resposta_captcha = solve_captcha_local(base64_string)
+            print(f"Resposta do captcha obtida: {self.resposta_captcha}")
+            self.input_captcha()
         except Exception as e:
             print(f"Erro ao rodar captcha: {e}")
 
     def input_captcha(self):
-        """Colocando a resposta no Input"""
-        self.resposta_captcha
+        """Insere a resposta do Captcha no campo de input"""
+        try:
+            input_captcha_element = WebDriverWait(self.browser, 20).until(
+                EC.presence_of_element_located((By.XPATH, '/html/body/app-root/app-documentos-busca/app-captcha/div/div/div/div/form/mat-form-field/div/div[1]/div/input'))  
+            )
+            input_captcha_element.clear() 
+            input_captcha_element.send_keys(self.resposta_captcha)  
+            print(f"Resposta do captcha inserida: {self.resposta_captcha}")
+        except Exception as e:
+            print(f"Erro ao preencher o campo do captcha: {e}")
+
 
     def coletar_dados_xpaths(self):
         """Coletar dados dos XPaths"""
@@ -180,42 +190,6 @@ class SessaoJurisprudencia:
             print(f"Erro ao obter requisições: {e}")
         return None
     
-    """ def clicar_check(self):
-                ""Botão de Checkbox""
-                try:
-                    botao_check_xpath = "/html/body/app-root/app-documentos-busca/div/mat-card[3]/mat-card-content/app-mat-search-select[5]/div/mat-form-field/div/div[1]/div/mat-select/div"
-                    botao_check = WebDriverWait(self.browser, 20).until(
-                        EC.element_to_be_clickable((By.XPATH, botao_check_xpath))
-                    )
-                    botao_check.click()
-                    print("Botão de Check clicado")
-                except Exception as e:
-                    print("Erro ao clicar no check:")
-        
-        def clique_botao_assunto(self):
-            ""Botão Check sobre o Assunto""
-            try:
-                botao_check_assunto_xpath = "/html/body/div[4]/div[2]/div/div/div/mat-option[2]"
-                botao_check_assunto = WebDriverWait(self.browser, 10).until(
-                    EC.element_to_be_clickable((By.XPATH, botao_check_assunto_xpath))
-                )
-                botao_check_assunto
-                print("Botão do assunto Clicado")
-            except Exception as e:
-                print("Erro ao clicar no Botão Assunto")
-
-        def clique_botao_pesquisar(self):
-            ""Botão de Pesquisar Assunto""
-            try:
-                botao_pesquisar_xpath = "/html/body/app-root/app-documentos-busca/div[1]/mat-card[1]/mat-card-content/div/button[1]"
-                botao_pesquisar = WebDriverWait(self.browser, 20).until(
-                    EC.element_to_be_clickable((By.XPATH, botao_pesquisar_xpath))
-                )
-                botao_pesquisar
-                print("Botao de Pesquisar clicado")
-            except Exception as e:
-                print("Erro ao clicar no botão de pesquisar")"""
-
     def clicar_botao(self):
         """Botão a ser clicado primeiro"""
         try:
@@ -267,16 +241,14 @@ class SessaoJurisprudencia:
                 self.sessao.cookies.set(cookie['name'], cookie['value'])
             
             self.obter_imagem_div()
+            self.rodar_captcha(self.img_src)
+            self.input_captcha()
             self.token_desafio = self.aguardar_token_na_pagina()
             
             if self.token_desafio:
                 
                 if self.img_src:
                     self.converter_base64_para_jpeg(self.img_src)
-                    self.rodar_captcha(self.img_src)
-                    #self.clicar_check()
-                    #self.clique_botao_assunto() 
-                    #self.clique_botao_pesquisar
                     self.clicar_botao()  
                 
                 self.esperar_e_clicar_botao()
