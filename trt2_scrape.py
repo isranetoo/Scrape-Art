@@ -70,6 +70,19 @@ class SessaoJurisprudencia:
         except Exception as e:
             print(f"Erro ao converter base64 para JPEG: {e}")
 
+#------------------------------------------------------------
+
+    """def rodar_captcha(self):
+        ""Executa o script do Captcha""
+        try:
+            import Tester  
+            self.resposta_captcha = Tester.processar_captcha("images/captcha_imagem.jpeg")
+            print(f"Resposta do captcha obtida: {self.resposta_captcha}")
+        except Exception as e:
+            print(f"Erro ao rodar captcha: {e}")"""
+
+#------------------------------------------------------------
+
     def coletar_dados_xpaths(self):
         """Coletar dados dos XPaths"""
         dados = []
