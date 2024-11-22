@@ -4,15 +4,12 @@ import string
 import random
 import base64
 from io import BytesIO
-
 import numpy
 import pytesseract
 from PIL import Image
 from PIL import ImageFilter
 from scipy.ndimage import gaussian_filter
 
-
-# Check if running on windows computer and if so, adds pytesseract to path
 if os.name == "nt":
     pytesseract.pytesseract.tesseract_cmd = 'C:\\Program Files\\Tesseract-OCR\\tesseract.exe'
 

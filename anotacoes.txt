@@ -129,10 +129,17 @@ Botão de pesquisar: /html/body/app-root/app-documentos-busca/div[1]/mat-card[1]
 /html/body/app-root/app-documentos-busca/div/mat-card[1]/mat-card-content/div/button[1]
 
 
+crie a funcao def input_captcha(self):
+        """Colocando a resposta no Input"""
+        self.resposta_captcha
+possibilitando que quando esse item aparecer na tela escreva a resposta obitida de self.resposta_captcha
 
-form do captcha: /html/body/app-root/app-documentos-busca/app-captcha/div/div/div/div/form/mat-form-field/div/div[1]
-
-faca que a funcao rodar_capthca funcione e faça com que o resultado da funcao seja comparada com os 6 ultimos  digito 
+form do captcha: /html/body/app-root/app-documentos-busca/app-captcha/div/div/div/div/form/mat-form-field/div/div[1]/div/input     
+resposta_esperada = "WKMF9B"  
+            if self.resposta_captcha == resposta_esperada:
+                print("Captcha resolvido corretamente!")
+            else:
+                print(f"Resposta incorreta! Esperada: {resposta_esperada}, Obtida: {self.resposta_captcha}")
 
 
     /html/body/div[3]/div[2]/div/div/div/mat-option[2]/span

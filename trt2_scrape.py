@@ -6,6 +6,7 @@ import csv
 from io import BytesIO
 from PIL import Image
 import requests
+from captcha_local_solver import solve_captcha_local
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -70,18 +71,18 @@ class SessaoJurisprudencia:
         except Exception as e:
             print(f"Erro ao converter base64 para JPEG: {e}")
 
-#------------------------------------------------------------
-
-    """def rodar_captcha(self):
-        ""Executa o script do Captcha""
-        try:
-            import captcha_local_solver  
-            self.resposta_captcha = captcha_local_solver("images/captcha_img.jpeg")
-            print(f"Resposta do captcha obtida: {self.resposta_captcha}")
+    def rodar_captcha(self, base64_string):
+        """Executa o script do Captcha"""
+        try: 
+            base64_string = base64_string.split(',')[1] if base64_string.startswith('data:image') else base64_string
+            self.resposta_captcha = solve_captcha_local(base64_string)  
+            print(f"Resposta do captcha obtida: {self.resposta_captcha}")          
         except Exception as e:
             print(f"Erro ao rodar captcha: {e}")
-"""
-#------------------------------------------------------------
+
+    def input_captcha(self):
+        """Colocando a resposta no Input"""
+        self.resposta_captcha
 
     def coletar_dados_xpaths(self):
         """Coletar dados dos XPaths"""
@@ -154,9 +155,9 @@ class SessaoJurisprudencia:
                     token = parametros.get('tokenDesafio', [None])[0]
                     if token:
                         self.token_desafio = token
-                        self.resposta_captcha = url_token[-6:]
+                        self.captcha_resposta = url_token[-6:]  
                         print(f"Token coletado: {token}")
-                        print(f"Resposta do captcha (últimos 6 dígitos): {self.resposta_captcha}")
+                        print(f"Resposta do captcha (últimos 6 dígitos): {self.captcha_resposta}")
                         return token
                     else:
                         print("TokenDesafio não encontrado nos parâmetros da URL.")
@@ -272,7 +273,7 @@ class SessaoJurisprudencia:
                 
                 if self.img_src:
                     self.converter_base64_para_jpeg(self.img_src)
-                    #self.rodar_captcha()
+                    self.rodar_captcha(self.img_src)
                     #self.clicar_check()
                     #self.clique_botao_assunto() 
                     #self.clique_botao_pesquisar
