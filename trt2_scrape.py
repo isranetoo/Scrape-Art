@@ -93,6 +93,18 @@ class SessaoJurisprudencia:
         except Exception as e:
             print(f"Erro ao preencher o campo do captcha: {e}")
 
+    def clique_enviar_captcha(self):
+        """Clicando para enviar o captcha"""
+        try:
+            clique_enviar_xpath = "/html/body/app-root/app-documentos-busca/app-captcha/div/div/div/div/form/button[2]"
+            clique_enviar = WebDriverWait(self.browser, 15).until(
+                EC.element_to_be_clickable((By.XPATH, clique_enviar_xpath))
+            )
+            clique_enviar.click()
+            print(f"Clique do Captcha")
+        except Exception as e:
+            print(f"Error ao clique de enviar")
+
 
     def coletar_dados_xpaths(self):
         """Coletar dados dos XPaths"""
@@ -243,6 +255,7 @@ class SessaoJurisprudencia:
             self.obter_imagem_div()
             self.rodar_captcha(self.img_src)
             self.input_captcha()
+            self.clique_enviar_captcha()
             self.token_desafio = self.aguardar_token_na_pagina()
             
             if self.token_desafio:

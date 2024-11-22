@@ -147,3 +147,8 @@ resposta_esperada = "WKMF9B"
     /html/body/div[3]/div[2]/div/div/div/mat-option[2]/span
 
     /html/body/div[3]/div[1]
+
+
+
+  botao de enviar:  /html/body/app-root/app-documentos-busca/app-captcha/div/div/div/div/form/button[2]
+                    /html/body/app-root/app-documentos-busca/app-captcha/div/div/div/div/form/button[2]/span
