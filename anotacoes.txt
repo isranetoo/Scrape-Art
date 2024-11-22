@@ -130,9 +130,9 @@ Botão de pesquisar: /html/body/app-root/app-documentos-busca/div[1]/mat-card[1]
 
 
 
-with open("Tester.py") as file:
-    exec(file.read())
+form do captcha: /html/body/app-root/app-documentos-busca/app-captcha/div/div/div/div/form/mat-form-field/div/div[1]
 
+faca que a funcao rodar_capthca funcione e faça com que o resultado da funcao seja comparada com os 6 ultimos  digito 
 
 
     /html/body/div[3]/div[2]/div/div/div/mat-option[2]/span

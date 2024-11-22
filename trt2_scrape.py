@@ -62,7 +62,7 @@ class SessaoJurisprudencia:
             imagem = Image.open(BytesIO(base64.b64decode(base64_string)))
             
 
-            captcha_nome = f"{self.resposta_captcha}.jpeg" if hasattr(self, 'resposta_captcha') and self.resposta_captcha else captcha_nome
+            captcha_nome = f"captcha_img.jpeg" if hasattr(self, 'resposta_captcha') and self.resposta_captcha else captcha_nome
             caminho_arquivo = os.path.join(pasta_images, captcha_nome)
             
             imagem.save(caminho_arquivo, "JPEG")
@@ -75,12 +75,12 @@ class SessaoJurisprudencia:
     """def rodar_captcha(self):
         ""Executa o script do Captcha""
         try:
-            import Tester  
-            self.resposta_captcha = Tester.processar_captcha("images/captcha_imagem.jpeg")
+            import captcha_local_solver  
+            self.resposta_captcha = captcha_local_solver("images/captcha_img.jpeg")
             print(f"Resposta do captcha obtida: {self.resposta_captcha}")
         except Exception as e:
-            print(f"Erro ao rodar captcha: {e}")"""
-
+            print(f"Erro ao rodar captcha: {e}")
+"""
 #------------------------------------------------------------
 
     def coletar_dados_xpaths(self):
@@ -272,6 +272,7 @@ class SessaoJurisprudencia:
                 
                 if self.img_src:
                     self.converter_base64_para_jpeg(self.img_src)
+                    #self.rodar_captcha()
                     #self.clicar_check()
                     #self.clique_botao_assunto() 
                     #self.clique_botao_pesquisar
