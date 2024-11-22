@@ -128,27 +128,15 @@ Botão de pesquisar: /html/body/app-root/app-documentos-busca/div[1]/mat-card[1]
 /html/body/div[4]/div[2]/div/div/div/mat-option[57]/mat-pseudo-checkbox
 /html/body/app-root/app-documentos-busca/div/mat-card[1]/mat-card-content/div/button[1]
 
+form do captcha: 
 
-faça com que a funcao "rodar_captcha" comece no momento que coletar a imagen em bsa64 e ja de a resposta para a funcao def input_captcha(self):
-        """Colocando a resposta no Input"""
-        self.resposta_captcha
-possibilitando que quando esse item aparecer na tela escreva a resposta obitida de self.resposta_captcha
-faça com que a reposta do rodar_captcha seja inserida no input antes que comece a coleta de dados e antes dos cliques 
-
-form do captcha: /html/body/app-root/app-documentos-busca/app-captcha/div/div/div/div/form/mat-form-field/div/div[1]/div/input     
-resposta_esperada = "WKMF9B"  
-            if self.resposta_captcha == resposta_esperada:
-                print("Captcha resolvido corretamente!")
-            else:
-                print(f"Resposta incorreta! Esperada: {resposta_esperada}, Obtida: {self.resposta_captcha}")
-
-
+    /html/body/app-root/app-documentos-busca/app-captcha/div/div/div/div/form/mat-form-field/div/div[1]/div/input     
     /html/body/div[3]/div[2]/div/div/div/mat-option[2]/span
     /html/body/div[3]/div[2]/div/div/div/mat-option[2]/span
-
     /html/body/div[3]/div[1]
-
-
 
   botao de enviar:  /html/body/app-root/app-documentos-busca/app-captcha/div/div/div/div/form/button[2]
                     /html/body/app-root/app-documentos-busca/app-captcha/div/div/div/div/form/button[2]/span
+
+escreva o codigo inteiro atualizado com a nova funcao
+input de pesquisar: /html/body/app-root/app-documentos-busca/div/mat-card[1]/mat-card-content/mat-form-field[1]/div/div[1]/div/input
