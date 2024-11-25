@@ -11,3 +11,9 @@ terceiro: ai sim aparece o captcha "/html/body/app-root/app-documentos-busca/app
 quarto: colete os dados e salve no arquivo .csv
 
 #buttonPesquisar > span > span
+
+<------------------------------>
+
+https://community.dataquest.io/t/web-scraping-without-selenium/456297
+
+primeiro tem faça o captcha e usando o captcha_local_solver e dando certo o captcha pegue o token e em seguida procure em "response" onde tera TODAAS as infos de todos os processos em json
