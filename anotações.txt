@@ -4,3 +4,8 @@
  4 =https://pje.trt2.jus.br/juris-backend/api/documentos?tokenDesafio=0c4c5471d6d18bcb2d02936e71641111bd48afc7bc6f2bab70b59ae7d688ea7f8d5273bdd2f3a111d018f8d8d4b1399f43f9bc30d99a82f979a770918490c8cbebb0adbd915d2cc96f4d0daadf5e41b37b583b72365bfa5e76eac708309385fe&resposta=2n8v42
 Token =?tokenDesafio=0c4c5471d6d18bcb2d02936e71641111bd48afc7bc6f2bab70b59ae7d688ea7f8d5273bdd2f3a111d018f8d8d4b1399f43f9bc30d99a82f979a770918490c8cbebb0adbd915d2cc96f4d0daadf5e41b37b583b72365bfa5e76eac708309385fe
 Resposta Token =&resposta=2n8v42
+
+primeiro: sair dessa pagina "/html/body/div[3]/div[2]/div/mat-dialog-container" e clicar no botao "/html/body/div[3]/div[2]/div/mat-dialog-container/ng-component/div/div[2]/button/span/span"
+segundo: clicar no botao de pesquisar "/html/body/app-root/app-documentos-busca/div/mat-card[1]/mat-card-content/div/button[1]/span/span"
+terceiro: ai sim aparece o captcha "/html/body/app-root/app-documentos-busca/app-captcha/div/div/div/div/form/img" e colete e resolva colocando a resposta em "/html/body/app-root/app-documentos-busca/app-captcha/div/div/div/div/form/mat-form-field/div/div[1]/div/input"
+quarto: colete os dados e salve no arquivo .csv
