@@ -27,7 +27,7 @@ class SessaoJurisprudencia:
                 page_content = response.text
                 start = page_content.find('data:image/jpeg;base64,') + len('data:image/jpeg;base64,')
                 end = page_content.find('"', start)
-                base64_image = page_content.find[start:end]
+                base64_image = page_content[start:end]
                 if base64_image:
                     print('CAPTCHA Obitido com sucesso.')
                     return base64_image
