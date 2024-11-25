@@ -9,3 +9,5 @@ primeiro: sair dessa pagina "/html/body/div[3]/div[2]/div/mat-dialog-container" 
 segundo: clicar no botao de pesquisar "/html/body/app-root/app-documentos-busca/div/mat-card[1]/mat-card-content/div/button[1]/span/span"
 terceiro: ai sim aparece o captcha "/html/body/app-root/app-documentos-busca/app-captcha/div/div/div/div/form/img" e colete e resolva colocando a resposta em "/html/body/app-root/app-documentos-busca/app-captcha/div/div/div/div/form/mat-form-field/div/div[1]/div/input"
 quarto: colete os dados e salve no arquivo .csv
+
+#buttonPesquisar > span > span
