@@ -27,6 +27,33 @@ class SessaoJurisprudencia:
         except Exception as e:
             print(f"Erro ao acessar a pagina inicial: {e}")
             return None
+        
+    def sair_dialogo(self,html):
+        """Clicando no dialogo para sair"""
+        try:
+            soup = BeautifulSoup(html, 'html.parser')
+            fechar_botao = soup.select_one("div[role='dialogo'] button span span")
+            if fechar_botao:
+                print(f"Botão de fechar encotrado")
+                fechar_url = fechar_botao.find_parent('button')['onclick']
+                if fechar_url:
+                    self.sessao.get(fechar_url)
+                    print("Janela fechada")
+        except Exception as e:
+            print(f"Erro ao fechar a janela: {e}")
+
+    def clicar_pesquisar(self,html):
+        """Clicando no botao de Pesquisar"""
+        try:
+            soup = BeautifulSoup(html, 'html.parser')
+            botao_pesquisar = soup.select_one("button[aria-label='Pesquisar']")
+            if botao_pesquisar:
+                print("Botão de pesquisar encotrado")
+                self.sessao.post(URL_DOCS)
+                print("Pesquisa Realizada")
+        except Exception as e:
+            print(f"Erro ao encontrar o botão de pesquisa: {e}")
+
 
     def obter_imagem_captcha(self, html):
         """Obter a imagem do CAPTCHA."""
@@ -112,6 +139,11 @@ class SessaoJurisprudencia:
             if not html: 
                 return
             
+            self.sair_dialogo(html)
+
+            self.clicar_pesquisar(html)
+            
+            html = self.sessao.get(URL_BASE).text
             self.obter_imagem_captcha(html)
             if self.img_src:
                 self.converter_img_base64_para_jpeg(self.img_src)
