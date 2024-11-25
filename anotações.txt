@@ -1,0 +1,6 @@
+1 =https://pje.trt2.jus.br/juris-backend/api/documentos
+2 =https://pje.trt2.jus.br/juris-backend/api/captcha
+3 =https://pje.trt2.jus.br/juris-backend/api/token
+ 4 =https://pje.trt2.jus.br/juris-backend/api/documentos?tokenDesafio=0c4c5471d6d18bcb2d02936e71641111bd48afc7bc6f2bab70b59ae7d688ea7f8d5273bdd2f3a111d018f8d8d4b1399f43f9bc30d99a82f979a770918490c8cbebb0adbd915d2cc96f4d0daadf5e41b37b583b72365bfa5e76eac708309385fe&resposta=2n8v42
+Token =?tokenDesafio=0c4c5471d6d18bcb2d02936e71641111bd48afc7bc6f2bab70b59ae7d688ea7f8d5273bdd2f3a111d018f8d8d4b1399f43f9bc30d99a82f979a770918490c8cbebb0adbd915d2cc96f4d0daadf5e41b37b583b72365bfa5e76eac708309385fe
+Resposta Token =&resposta=2n8v42

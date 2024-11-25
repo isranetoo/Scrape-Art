@@ -44,7 +44,7 @@ def solve_captcha_local(th1, th2, sig1, sig2, bytes_data):
     return number
 
 # Caminho para a pasta de imagens
-files = './images/'  # Altere para o caminho correto da sua pasta
+files = 'C:/Users/IsraelAntunes/Desktop/Scrape-Art/Grid Search/images'  # Altere para o caminho correto da sua pasta
 
 # Dicionário para armazenar os resultados
 res = {}
