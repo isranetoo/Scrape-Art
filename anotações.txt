@@ -25,3 +25,6 @@ o token esta em "Preview" ou "Response" tokenDesafio: 0e5188e7eed65074800360fd24
 
 o cokkie esta presente desde o começo da pagina ou seja se pegar ele e utilizar ele de uma forma para ajudar a resolver o GET e POST
 
+peque a resposa do fazer_requisicao_com_headers Resposta não é uma imagem: {"mensagem":"","tokenDesafio":"7e9ef4d9829b56bb5658c8983474f0576c1ca197369edf1dc4f60e71d9e38c2b7bf0777940f32b95d175a8bfc078ffee8c26f2fbe926fdca86d8ae749dc47c5484ff2e4d8cbed033f142c76ba8d66b29339a10c2e6e305f6ef9fb62c83f94dba","imagem":"/9j/4AAQSkZJRgABAgAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCABaASwDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAA
+e esse valor que pode variar ""imagem":"/9j/4AAQSkZJRgABAgAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCABaASwDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAA"
+converta ele em img 
