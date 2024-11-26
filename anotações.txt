@@ -16,4 +16,4 @@ quarto: colete os dados e salve no arquivo .csv
 
 https://community.dataquest.io/t/web-scraping-without-selenium/456297
 
-primeiro tem faça o captcha e usando o captcha_local_solver e dando certo o captcha pegue o token e em seguida procure em "response" onde tera TODAAS as infos de todos os processos em json
+primeiro prcure o botao de fechar o dialogo e simule o aperto do botao, aperte o botao de pesquisar para aparecer o captcha e faça ele e use o captcha_local_solver e dando certo o captcha pegue o token e em seguida procure em "response" onde tera TODAS as infos de todos os processos em json e os salve
