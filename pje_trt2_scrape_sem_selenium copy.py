@@ -42,6 +42,18 @@ class SessaoJurisprudencia:
                 print(f"Resposta NÃO é em Json: {resposta.text[:500]}")
         except Exception as e:
                 print(f"Erro na requisição: {e}")
+
+    def obter_cookies(self, url):
+        """Coletando o Cookie da página"""
+        try:
+            resposta = self.sessao.get(url)
+            resposta.raise_for_status()
+
+            cookies = resposta.cookies.get_dict()
+            print(f"Cookies coletados: {cookies}")
+            return cookies
+        except Exception as e:
+            print(f"Erro ao coletar o cookies: {e}") 
         
 
     def converter_base64_para_jpeg(self, base64_string, captcha_nome="captcha_imagem.jpeg"):
@@ -76,19 +88,37 @@ class SessaoJurisprudencia:
                 print("Captcha ou Token de desafio ausente")
                 return
             
-            payload = {"resposta": self.resolver_captcha, "tokenDesafio": self.token_desafio}
+            payload = {"resposta": self.resposta_captcha, "tokenDesafio": self.token_desafio}
             resposta = self.sessao.post(URL_CAPTCHA, json=payload)
             print(f"Resposta do servidor: {resposta.status_code} - {resposta.text}")
         except Exception as e:
             print(f"Erro ao  enviar a resposta do Captcha: {e}")
 
-
     def iniciar_sessao(self):
         """Fluxo principal para iniciar a sessão e coletar dados."""
-        try: 
+        try:
             print("Iniciando a Sessão")
+
+            cookies = self.obter_cookies(URL_BASE)
+            if cookies:
+                print(f"Cookies capturados: {cookies}")
+            else:
+                print("Não foi possível capturar os cookies.")
+
             self.fazer_requisicao_com_headers(URL_CAPTCHA)
+
+            if self.token_desafio:
+                print(f"Token de desafio obtido: {self.token_desafio}")
+            else:
+                print("Token de desafio não encontrado!")
+
             self.enviar_resposta_captcha()
+
+            html_final = self.sessao.get(URL_BASE).text
+            if html_final:
+                print("Sessão inicializada com sucesso.")
+            else:
+                print("Falha ao carregar a página final.")
         except Exception as e:
             print(f"Erro ao Iniciar a Sessão: {e}")
 
