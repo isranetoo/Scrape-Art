@@ -24,3 +24,6 @@ a imagem do captcha esta em "Preview" ou "Response" imagem: /9j/4AAQSkZJRgABAgAA
 o token esta em "Preview" ou "Response" tokenDesafio: 0e5188e7eed65074800360fd242e5fda9d9330def657edffd040cf28f0e5d9f10d590ada24f5184b30de3cab75ea6779f6016dd7bdba208cdd1dd4f239861518d01360a90710efa9949b4c28c749d8d07e3395ed57bbc071bb9fc55612f1037c
 
 o cookie esta presente desde o começo da pagina ou seja se pegar ele e utilizar ele de uma forma para ajudar a resolver o GET e POST
+
+
+com o "https://pje.trt2.jus.br/juris-backend/api/documentos?tokenCaptcha=163a6e593609fa0a084d277f2e604e80b57c77db2bcfffe5826264bd2de0f196" indo ao "Preview" e depois indo ao JSON e ao "documents:" tera todos os itens para o  webscrape

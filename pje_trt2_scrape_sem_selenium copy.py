@@ -55,7 +55,27 @@ class SessaoJurisprudencia:
             return cookies
         except Exception as e:
             print(f"Erro ao coletar o cookies: {e}") 
-        
+    
+    def obter_documentos(self):
+        """Coletano os docs usando o tokenCaptcha"""
+        try:
+            if not self.token_desafio or not self.resposta_captcha:
+                print("Token de desafio ou resposta ausentes")
+                return
+            token_captcha = self.token_desafio
+            url_documentos = f"{URL_DOCUMENTOS}?tokenCaptcha={token_captcha}"
+            print(f"Requisitando documentos na URL: {url_documentos}")
+
+            resposta = self.sessao.get(url_documentos)
+            resposta.raise_for_status()
+
+            conteudo_json = resposta.json()
+            documentos = conteudo_json.get("documentos",[])
+            print(f"Total de documentos encontrados: {len(documentos)}")
+            for doc in documentos:
+                print(json.dumps(doc, indent=4, ensure_ascii=False))
+        except Exception as e:
+            print(f"Erro ao obter os documentos: {e}")       
 
     def converter_base64_para_jpeg(self, base64_string, captcha_nome="captcha_imagem.jpeg"):
         """Converte Base64 para JPEG e salva na pasta 'images'."""
@@ -120,7 +140,8 @@ class SessaoJurisprudencia:
 
             self.fazer_requisicao_com_headers(URL_CAPTCHA)
 
-            if self.token_desafio:
+            if self.token_desafio and sessao.resposta_captcha:
+                sessao.obter_documentos()
                 print(f"Token de desafio obtido: {self.token_desafio}")
             else:
                 print("Token de desafio não encontrado!")
