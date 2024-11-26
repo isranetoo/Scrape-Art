@@ -9,8 +9,11 @@ from bs4 import BeautifulSoup
 from captcha_local_solver import solve_captcha_local
 
 URL_BASE = 'https://pje.trt2.jus.br/jurisprudencia/'
-URL_TOKEN = 'https://pje.trt2.jus.br/juris-backend/api/token'
+URL_CAPTCHA = 'https://pje.trt2.jus.br/juris-backend/api/captcha'
 URL_DOCUMENTOS = 'https://pje.trt2.jus.br/juris-backend/api/documentos'
+URL_OPCOES = 'https://pje.trt2.jus.br/juris-backend/api/opcoes'
+URL_FILTROS = 'https://pje.trt2.jus.br/juris-backend/api/filtros'
+URL_TOKEN = 'https://pje.trt2.jus.br/juris-backend/api/token'
 
 
 class SessaoJurisprudencia:
@@ -30,6 +33,23 @@ class SessaoJurisprudencia:
         except requests.RequestException as e:
             print(f"Erro ao acessar a página inicial: {e}")
             return None
+    
+    def fazer_requisicao_com_headers(self, url):
+        """Fazer requisição com cabeçalhos"""
+        headers = {
+            'Accept': 'application/json, text/plain, */*',
+            'Accept-Language': 'pt-BR,pt;q=0.9',
+            'Connection': 'keep-alive',
+            'Referer': URL_CAPTCHA,
+            'User-Agent': 'Mozilla/5.0'
+        }
+        try:
+            resposta = self.sessao.get(url, headers=headers)
+            print(f"Status: {resposta.status_code}\nResposta: {resposta.text[:500]}")
+            return resposta
+        except Exception as e:
+            print(f"Erro na requisição: {e}")
+
 
     def sair_dialogo(self, html):
         """Sair da janela de diálogo usando BeautifulSoup."""
@@ -162,7 +182,7 @@ class SessaoJurisprudencia:
             html = self.obter_pagina_inicial()
             if not html:
                 return
-
+            self.fazer_requisicao_com_headers(URL_CAPTCHA)
             self.sair_dialogo(html)
 
             self.clicar_pesquisar(html)
