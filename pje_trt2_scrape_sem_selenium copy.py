@@ -23,6 +23,7 @@ class SessaoJurisprudencia:
             'Accept-Language': 'pt-BR,pt;q=0.9',
             'Connection': 'keep-alive',
             'Referer': URL_CAPTCHA,
+            'Authorization': f"Bearer {self.token_desafio}",
             'User-Agent': 'Mozilla/5.0'
         }
         try:
@@ -89,8 +90,20 @@ class SessaoJurisprudencia:
                 return
             
             payload = {"resposta": self.resposta_captcha, "tokenDesafio": self.token_desafio}
-            resposta = self.sessao.post(URL_CAPTCHA, json=payload)
+            headers = {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'User-Agent': 'Mozilla/5.0'
+            }
+
+            print("Enviando payload:", payload)
+            print("Com os cabeçalhos:", headers)
+
+            resposta = self.sessao.post(URL_CAPTCHA, json=payload, headers=headers)
             print(f"Resposta do servidor: {resposta.status_code} - {resposta.text}")
+
+            if resposta.status_code == 405:
+                print("Método HTTP não permitido. Verifique o método ou o endpoint.")
         except Exception as e:
             print(f"Erro ao  enviar a resposta do Captcha: {e}")
 
