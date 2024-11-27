@@ -72,7 +72,7 @@ class SessaoJurisprudencia:
             "tokenDesafio": self.token_desafio,
             "name": "query parameters",
             #"andField": ["arroz"],
-            #"assunto": ["Abandono de Emprego [55200]"],
+            #"assunto": ["Abandono de Emprego [55200]", "Adicional de Horas Extras [55365]" , "Adicional de Horas Extras [13787]"],
             "paginationPosition": 1,
             "paginationSize": 100,
             "fragmentSize": 512,
