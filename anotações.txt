@@ -27,3 +27,7 @@ o cookie esta presente desde o começo da pagina ou seja se pegar ele e utilizar
 
 
 com o "https://pje.trt2.jus.br/juris-backend/api/documentos?tokenCaptcha=163a6e593609fa0a084d277f2e604e80b57c77db2bcfffe5826264bd2de0f196" indo ao "Preview" e depois indo ao JSON e ao "documents:" tera todos os itens para o  webscrape
+
+faça com que realize um POST , utilizando "https://pje.trt2.jus.br/juris-backend/api/documentos?tokenDesafio=21c542a72a9a8ccbfe1d6c8e73bd4af0289b05e39a61e2958d737846f1ef43db82545e77b781cc04fb18a722a11375899417a2e7d93245abec3c0aad5c31f90b62aa9f8ef538a9a1ea6ffedaf4d3a9ce5fc2302d557735eeb5d9049dba502fdc&resposta=4u7wrs"
+como padrao "https://pje.trt2.jus.br/juris-backend/api/documentos?tokenDesafio=" e a "21c542a72a9a8ccbfe1d6c8e73bd4af0289b05e39a61e2958d737846f1ef43db82545e77b781cc04fb18a722a11375899417a2e7d93245abec3c0aad5c31f90b62aa9f8ef538a9a1ea6ffedaf4d3a9ce5fc2302d557735eeb5d9049dba502fdc" como 
+uma variavel que seria o token coletado e "&resposta=" padrao e "4u7wrs" seria a resposta do solver_captcha , modifique o codigo possibilitando essa funcionalidade:
