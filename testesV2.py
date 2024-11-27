@@ -17,7 +17,7 @@ class SessaoJurisprudencia:
         self.resposta_captcha = None
 
 
-    def fazer_requisicao_hearders(self,url):
+    def fazer_requisicao_com_headers(self,url):
         """Fazendo a Requisição do Hearder"""
         headers = {
             'Accept': 'application/json, text/plain, */*',
@@ -95,19 +95,47 @@ class SessaoJurisprudencia:
             print(f"Imagem salva na pasta Images: {caminho_arquivo}")
         except Exception as e:
             print(f"Erro ao salvar a imagem: {e}")
+
+    def salvar_imagem_e_resolver(self, base64_string, nome_arquivo="captcha_temp.jpeg"):
+        """Salva a imagem a partir do Base64 e tenta resolver o captcha."""
+        try:
+            if base64_string.startswith('data:image'):
+                base64_string = base64_string.split(',')[1]
+
+            imagem = Image.open(BytesIO(base64.b64decode(base64_string)))
+            caminho_arquivo = os.path.join("images", nome_arquivo)
+            os.makedirs("images", exist_ok=True)
+            imagem.save(caminho_arquivo, "JPEG")
+            print(f"Imagem salva como {caminho_arquivo}")
+
+            resposta = solve_captcha_local(caminho_arquivo)
+            self.resposta_captcha = resposta
+            print(f"Resposta do captcha: {self.resposta_captcha}")
+            return resposta
+        except Exception as e:
+            print(f"Erro ao salvar ou resolver o captcha: {e}")
+
     
 
     def resolver_captcha(self, base64_string):
-        """Resolvendo o Captcha"""
+        """Resolve o captcha localmente e armazena o valor."""
         try:
-            base64_string = base64_string.split(',')[1] if base64_string.startswith('data:image') else base64_string
-            resposta = solve_captcha_local(base64_string)
-            self.resposta_captcha = resposta
-            print(f"Resposta do Captcha: {self.resposta_captcha}")
-            return resposta
+            if base64_string.startswith('data:image'):
+                base64_string = base64_string.split(',')[1]          
+            try:
+                base64.b64decode(base64_string, validate=True)  
+            except Exception as e:
+                print(f"Erro: Base64 inválido: {e}")
+                return
+            
+            resposta = solve_captcha_local(base64_string)  
+            self.resposta_captcha = resposta  
+            print(f"Resposta do captcha: {self.resposta_captcha}")
+            return resposta  
         except Exception as e:
-            print(f"Erro ao resolver o Captcha: {e}")
+            print(f"Erro ao resolver o captcha: {e}")
             self.resposta_captcha = None
+
 
     
     def enviar_resposta_captcha(self):
@@ -160,50 +188,46 @@ class SessaoJurisprudencia:
                 'Authorization': f"Bearer {self.token_desafio}",
                 'Cache-Control': 'no-cache',
             }
-            resposta = self.sessao.post(url_post, json=payload, headers=headers)
-            print(f"Resposta do servidor: {resposta.status_code} - {resposta.text}")
+            print(f"Eviando o Payload: {payload}")
+            resposta = self.sessao.post(URL_DOCUMENTOS, json=payload, headers=headers)
+            print(f"resposta do servidor: {resposta.status_code} - {resposta.text}")
 
-            if resposta.status_code == 200:
-                print("POST realizado com sucesso.")
+            if resposta.status_code ==200:
+                print("POSTA realizado com sucesso")
                 return resposta.json()
             else:
-                print(f"Erro ao realizar POST: {resposta.status_code} - {resposta.text}")
+                print(f"Erro ao realizar o POST")
         except Exception as e:
             print(f"Erro ao enviar o documento: {e}")
-           
+
+
+            
                 
     def inciando_sessao(self):
         """Fluxo de iniciar a Sessão"""
         try:
             print("Iniciando a Sessão")
 
-            '''cookies = self.obter_cookie(URL_BASE)
+            '''cookies = self.obter_cookies(URL_BASE)
             if cookies:
-                print(f"Cookies coletados: {cookies}")
+                print(f"Cookies capturados: {cookies}")
             else:
-                print("Erro ao coletar o Cookie")'''
-            
-            self.fazer_requisicao_hearders(URL_CAPTCHA)
+                print("Não foi possível capturar os cookies.")'''
+
+            self.fazer_requisicao_com_headers(URL_CAPTCHA)
+
+            if self.token_desafio:
+                base64_captcha = "aqui_vai_o_base64_extraído" 
+                self.resolver_captcha(base64_captcha)
+                self.salvar_imagem_e_resolver()
 
             if self.token_desafio and self.resposta_captcha:
-                self.obter_documentos()
-                print(f"Token de desafio obtido: {self.token_desafio}")
+                self.enviar_documento()
+                self.enviar_resposta_captcha()
             else:
-                print("Erro ao encotrar o Token")
-            
-            self.enviar_resposta_captcha()
-
-            self.enviar_documento()
-
-
-
-            html_final = self.sessao.get(URL_BASE).text
-            if html_final:
-                print('Sessão inicializada corretamente')
-            else:
-                print("Falha ao inicializar a Pagina")
+                print("Token de desafio ou resposta do captcha não encontrados.")
         except Exception as e:
-            print(f"Erro ao iniciar a Sessção: {e}")
+            print(f"Erro ao iniciar a sessão: {e}")
 
 
 sessao = SessaoJurisprudencia()
