@@ -33,4 +33,4 @@ como padrao "https://pje.trt2.jus.br/juris-backend/api/documentos?tokenDesafio="
 uma variavel que seria o token coletado e "&resposta=" padrao e "4u7wrs" seria a resposta do solver_captcha , modifique o codigo possibilitando essa funcionalidade:
 
 
- em payload mande tambem o body (imgame) em POST 
+ crie um loop que que toda vez que der resposta errada , volte a tentar e salve todo os documentos coletados em um arquivo separado em .JSON
