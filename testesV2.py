@@ -1,9 +1,10 @@
 import os
 import json
 import base64
-from io import BytesIO
-from PIL import Image
 import requests
+from io import BytesIO
+from datetime import datetime
+from PIL import Image
 from captcha_local_solver import solve_captcha_local
 
 URL_BASE = 'https://pje.trt2.jus.br/jurisprudencia/'
@@ -44,18 +45,6 @@ class SessaoJurisprudencia:
                 print(f"Resposta NÃO é um Json: {resposta.text[:500]}")
         except Exception as e:
             print(f"Erro ao coletar a imagem JSON: {e}")
-
-
-    def obter_cookie(self, url):
-        """Coletando o Cookie da pagina"""
-        try:
-            resposta = self.sessao.get(url)
-            resposta.raise_for_status()
-            cookie = resposta.cookies.get_dict()
-            print(f"Cookie coletado: {cookie}")
-            return cookie
-        except requests.exceptions.RequestException as e:
-            print(f"Erro ao coletar o Cookie: {e}")
 
 
     def obter_documentos(self):
@@ -145,11 +134,24 @@ class SessaoJurisprudencia:
                 print("Captcha ou token do desafion ausente")
                 return
             
-            payload = {"resposta": self.resolver_captcha, "tokenDesafion": self.token_desafio}
+            payload = {
+                "resposta": self.resolver_captcha(),
+                "tokenDesafio": self.token_desafio,
+                "timestamp": self.gerar_timestamp(),
+                "andField":["arroz"],
+                "browser.ipAddres": self.obter_ip_publico(),
+                "browser.via": self.obter_user_agent(),
+                "name": "query parameters",
+                "paginationPosition": 1,
+                "paginationSize": 20,
+                "fragmentSize": 512,
+                "ordenarPor": "dataPublicacao"
+            }
+
             headers = {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
-                'User-Agent': 'Mozilla/5.0'
+                'User-Agent': self.obter_user_agent()
             }
             print("Eviando payload,", payload)
             print("Eviando o hearders:", headers)
@@ -219,7 +221,7 @@ class SessaoJurisprudencia:
             if self.token_desafio:
                 base64_captcha = "aqui_vai_o_base64_extraído" 
                 self.resolver_captcha(base64_captcha)
-                self.salvar_imagem_e_resolver()
+                self.salvar_imagem_e_resolver(base64_string=base64_captcha)
 
             if self.token_desafio and self.resposta_captcha:
                 self.enviar_documento()
