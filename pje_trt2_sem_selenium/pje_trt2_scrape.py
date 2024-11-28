@@ -91,6 +91,7 @@ class SessaoJurisprudencia:
             "paginationSize": self.numero_de_pagina,
             "fragmentSize": 512,
             "ordenarPor": "dataPublicacao",
+            #"ordenarPor": "relevancia" 
         }
         headers = {
             'Accept': 'application/json, text/plain, */*',
