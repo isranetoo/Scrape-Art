@@ -69,10 +69,10 @@ class SessaoJurisprudencia:
             "resposta": self.resposta_captcha,
             "tokenDesafio": self.token_desafio,
             "name": "query parameters",
-            "andField": ["arroz"],
+            "andField": ["Itaú"],
             #"assunto": ["Abandono de Emprego [55200]", "Adicional de Horas Extras [55365]" , "Adicional de Horas Extras [13787]"],
             #"classeJudicial": ["Agravo Regimental Trabalhista"],
-            #"magistrado": ["ABNER CAIUBI VIANA DE BRITO"],
+            #"magistrado": ["IEDA REGINA ALINERI PAULI"],
             #"orgaoJulgador": ["10ª Turma - Cadeira 1"],
             #"orgaoJulgadorColegiado": ["10ª Turma"],
             #"dataPublicacao.start": "2023-10-01",
@@ -106,7 +106,7 @@ class SessaoJurisprudencia:
         os.makedirs(pasta, exist_ok=True)
         caminho = os.path.join(pasta, arquivo_nome)
         try:
-            with open(caminho, 'w', encoding='utf-8',) as arquivo:
+            with open(caminho, 'a', encoding='utf-8',) as arquivo:
                 json.dump(documentos, arquivo, ensure_ascii=False, indent=4)
                 print(f"Documentos salvos em: {caminho}")
         except Exception as e:
