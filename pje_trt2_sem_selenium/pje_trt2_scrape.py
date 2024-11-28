@@ -13,6 +13,14 @@ class SessaoJurisprudencia:
         self.sessao = requests.Session()
         self.token_desafio = None
         self.resposta_captcha = None
+        self.assunto_de_interesse = None
+        self.numero_de_pagina = None
+
+    def num_pagina(self):
+        self.numero_de_pagina = input("==== Digite o numero de pagina: ")
+
+    def assunto_interesse(self):
+        self.assunto_de_interesse = input("==== Digite o assunto de interesse: ")    
 
     def obter_ip_local(self):
         """Obtendo o IP local"""
@@ -57,7 +65,7 @@ class SessaoJurisprudencia:
         except Exception as e:
             print(f"Erro ao resolver o CAPTCHA: {e}")
             self.resposta_captcha = None
-
+        
     def enviar_documento(self):
         """Enviando o documento (POST)"""
         if not self.token_desafio or not self.resposta_captcha:
@@ -69,7 +77,7 @@ class SessaoJurisprudencia:
             "resposta": self.resposta_captcha,
             "tokenDesafio": self.token_desafio,
             "name": "query parameters",
-            "andField": ["Itaú"],
+            "andField": [self.assunto_de_interesse],
             #"assunto": ["Abandono de Emprego [55200]", "Adicional de Horas Extras [55365]" , "Adicional de Horas Extras [13787]"],
             #"classeJudicial": ["Agravo Regimental Trabalhista"],
             #"magistrado": ["IEDA REGINA ALINERI PAULI"],
@@ -77,8 +85,9 @@ class SessaoJurisprudencia:
             #"orgaoJulgadorColegiado": ["10ª Turma"],
             #"dataPublicacao.start": "2023-10-01",
             #"dataDistribuicao.start": "2024",
+            #"dataPublicacao.end": "2024-11-01",
             "paginationPosition": 1,
-            "paginationSize": 100,
+            "paginationSize": self.numero_de_pagina,
             "fragmentSize": 512,
             "ordenarPor": "dataPublicacao",
         }
@@ -114,12 +123,14 @@ class SessaoJurisprudencia:
 
     def inciar_sessao(self):
         while True:
-            print("Iniciando a Sessão...")
+            self.assunto_interesse()
+            self.num_pagina()
+            print("==== Iniciando a Sessão ====")
             self.fazer_requisicao_captcha()
             if self.token_desafio and self.resposta_captcha:
                 sucesso = self.enviar_documento()
                 if sucesso:
-                    print("Documentos salvos com SUCESSO.")
+                    print("==== Documentos salvos com SUCESSO.")
                     break
                 else:
                     ("Erro ao salvar os Documentos...")
