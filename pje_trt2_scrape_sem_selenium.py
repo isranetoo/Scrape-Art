@@ -69,16 +69,18 @@ class SessaoJurisprudencia:
             "resposta": self.resposta_captcha,
             "tokenDesafio": self.token_desafio,
             "name": "query parameters",
-            #"andField": ["Arroz"],
+            "andField": ["arroz"],
             #"assunto": ["Abandono de Emprego [55200]", "Adicional de Horas Extras [55365]" , "Adicional de Horas Extras [13787]"],
             #"classeJudicial": ["Agravo Regimental Trabalhista"],
             #"magistrado": ["ABNER CAIUBI VIANA DE BRITO"],
             #"orgaoJulgador": ["10ª Turma - Cadeira 1"],
             #"orgaoJulgadorColegiado": ["10ª Turma"],
+            #"dataPublicacao.start": "2023-10-01",
+            #"dataDistribuicao.start": "2024",
             "paginationPosition": 1,
             "paginationSize": 100,
             "fragmentSize": 512,
-            "ordenarPor": "dataPublicacao"
+            "ordenarPor": "dataPublicacao",
         }
         headers = {
             'Accept': 'application/json, text/plain, */*',
@@ -98,7 +100,7 @@ class SessaoJurisprudencia:
             print(f"Erro ao enviar o POST: {e}")
 
     def salvar_documentos(self, documentos):
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        timestamp = datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
         arquivo_nome = f"documentos_{timestamp}.json"
         pasta = "documentos"
         os.makedirs(pasta, exist_ok=True)

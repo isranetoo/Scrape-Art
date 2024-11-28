@@ -6,6 +6,7 @@ import csv
 from io import BytesIO
 from PIL import Image
 import requests
+from datetime import datetime
 from captcha_local_solver import solve_captcha_local
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -137,13 +138,15 @@ class SessaoJurisprudencia:
 
     def salvar_dados_em_csv(self, nome_arquivo="dados_jurisprudencia_PJE.csv"):
         """Salvar dados em CSV sem sobrescrever"""
+        timestamp = datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
+        arquivo_nome = f"documentos_{timestamp}.csv"
         try:
-            with open(nome_arquivo, 'a', newline='', encoding='utf-8') as file:  
+            with open(arquivo_nome, 'a', newline='', encoding='utf-8') as file:  
                 writer = csv.writer(file, delimiter=';')
                 if file.tell() == 0: 
                     writer.writerow(['Inteiro Teor','Título', 'Estágio', 'Órgão', 'Amostras'])
                 writer.writerows(self.dados_coletados)
-            print(f"Dados salvos em {nome_arquivo}")
+            print(f"Dados salvos em {arquivo_nome}")
         except Exception as e:
             print(f"Erro ao salvar dados em CSV: {e}")
 
