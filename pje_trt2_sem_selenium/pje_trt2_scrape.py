@@ -1,5 +1,6 @@
 import os
 import json
+import csv
 from datetime import datetime
 import requests
 from captcha_local_solver import solve_captcha_local
@@ -77,7 +78,7 @@ class SessaoJurisprudencia:
             "resposta": self.resposta_captcha,
             "tokenDesafio": self.token_desafio,
             "name": "query parameters",
-            "andField": [self.assunto_de_interesse],
+            #"andField": [self.assunto_de_interesse],
             #"assunto": ["Abandono de Emprego [55200]", "Adicional de Horas Extras [55365]" , "Adicional de Horas Extras [13787]"],
             #"classeJudicial": ["Agravo Regimental Trabalhista"],
             #"magistrado": ["IEDA REGINA ALINERI PAULI"],
@@ -101,6 +102,7 @@ class SessaoJurisprudencia:
             if resposta.status_code == 200:
                 documentos = resposta.json()
                 self.salvar_documentos(documentos)
+                #self.converter_para_csv(documentos)  
                 return True
             else:
                 print(f"Erro ao realizar o POST: {resposta.status_code} - {resposta.text}")
@@ -121,9 +123,35 @@ class SessaoJurisprudencia:
         except Exception as e:
             print(f"Erro ao salvar os documentos: {e}")
 
+#                   <----------------------->
+    '''
+    def converter_para_csv(self, documentos):
+        """Convertendo JSON para CSV"""
+        timestamp = datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
+        arquivo_nome_csv = f"documentos_{timestamp}.csv"
+        pasta = "documentos"
+        os.makedirs(pasta,exist_ok=True)
+        caminho_csv = os.path.join(pasta, arquivo_nome_csv)
+
+        try:
+            with open(caminho_csv, 'a', newline='', encoding='utf-8')as arquivo_csv:
+                writer = csv.writer(arquivo_csv)
+
+                headers = documentos[0].keys() if documentos else []
+                writer.writerow(headers)
+
+                for documento in documentos:
+                    writer.writerow(documento.values())
+
+                print(f"Documentos convertidos para CSV em: {caminho_csv}")
+        except Exception as e:
+            print(f"Erro ao converter para CSV: {e}")'''
+
+#                   <----------------------->
+
     def inciar_sessao(self):
         while True:
-            self.assunto_interesse()
+            #self.assunto_interesse()
             self.num_pagina()
             print("==== Iniciando a Sessão ====")
             self.fazer_requisicao_captcha()
