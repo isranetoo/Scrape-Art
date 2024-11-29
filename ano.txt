@@ -1,11 +1,4 @@
 # crie um for para  "paginationPosition": 1 aumentando +1 a cada requisição feita e salve os documentos como x_timestamp_pagina a cada requisição ou seja pagina 1 salve , pagina 2 salve 
-crie um for para ficar retentando ate o captcha ate acertar
-so 150 por pagina 
+# crie um for para ficar retentando ate o captcha ate acertar
+# so 150 por pagina 
 # cliente_data_pagina
-
-crie uma logica onde verifique a resposta do arquivo .json antes de salva-lo e se estiver com {
-    "mensagem": "A resposta informada é incorreta",
-    "tokenDesafio": "4d0c19394bb699cafd2e353e31178a794284bbf4a043be11e....",
-    "imagem": "/9j/4AAQSkZFABRRRQAVlp/o/iaVO2BNAEtFMhmjuIllibcp9sEHoQQeQQeCD0p9ABRRRQpZNNWNisn7JC2Z...",
-    "audio": null
-} não salve-o, e refaça a mesma requisição da mesma pagina com um novo captcha, quando não tiver essa resposta, salve o .json e vá para proxima pagina
