@@ -19,7 +19,7 @@ class SessaoJurisprudencia:
 
 
     def num_pagina(self):
-        self.numero_de_pagina = input("==== Digite o numero de pagina: ")
+        self.numero_de_pagina = input("==== Digite o numero de Processos por pagina: ")
 
     def assunto_interesse(self):
         self.assunto_de_interesse = input("==== Digite o assunto de interesse: ")  
@@ -90,38 +90,45 @@ class SessaoJurisprudencia:
             'Content-Type': 'application/json',
             'User-Agent': self.obter_user_agent(),
         }
-        try:
-            resposta = self.sessao.post(url_post, json=payload, headers=headers)
-            if resposta.status_code ==200:
-                documentos = resposta.json()
-                self.salvar_documentos(documentos,pagina)
-                return True
-            else:
-                print(f"Erro ao realizar o POST: {resposta.status_code} - {resposta.text}")
+        while True:
+            try:
+                resposta = self.sessao.post(url_post, json=payload, headers=headers)
+                if resposta.status_code == 200:
+                    documentos = resposta.json()
+                    if "mensagem" in documentos and documentos["mensagem"] == "A resposta informada é incorreta":
+                        print(f"Erro na resposta: {documentos['mensagem']}. Tentando novamente para pagina {pagina}...")
+                        self.fazer_requisicao_captcha()
+                        continue
+                    else:
+                        self.salvar_documentos(documentos, pagina)
+                        return True
+                else:
+                    print(f"Erro ao realizar o POST: {resposta.status_code} - {resposta.text}")
+                    return False
+            except Exception as e:
+                print(f"Erro ao realizar o post: {e}")
                 return False
-        except Exception as e:
-            print(f"Erro ao enviar o POST: {e}")
 
     def salvar_documentos(self, documentos, pagina):
         timestamp = datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
-        arquivo_nome = f"{self.assunto_de_interesse}_pagina_{pagina}_data_{timestamp}.json"
+        arquivo_nome = f"documentos_pagina_{pagina}_{timestamp}.json"
         pasta = "documentos"
         os.makedirs(pasta, exist_ok=True)
         caminho = os.path.join(pasta, arquivo_nome)
         try:
             with open(caminho, 'w', encoding='utf-8') as arquivo:
                 json.dump(documentos, arquivo, ensure_ascii=False, indent=4)
-                print(f"Documentos da pagina {pagina} salvos em: {caminho}")
+                print(f"Documentos da página {pagina} salvos em: {caminho}")
         except Exception as e:
-            print(f"Erro a salvar os documentos: {e}")
+            print(f"Erro ao salvar os documentos da página {pagina}: {e}")
 
     def iniciar_sessao(self):
         self.num_pagina()
         self.assunto_interesse()
         print("==== Iniciando a Sessão ====")
-        pagina_atual = 1
-        max_pagina = 15
-        while pagina_atual <= max_pagina:
+        pagina_atual = 1  
+        limite_paginas = 15  
+        while pagina_atual <= limite_paginas:
             self.fazer_requisicao_captcha()
             if self.token_desafio and self.resposta_captcha:
                 sucesso = self.enviar_documentos(pagina_atual)
@@ -129,10 +136,11 @@ class SessaoJurisprudencia:
                     print(f"==== Página {pagina_atual} processada com sucesso.")
                     pagina_atual += 1
                 else:
-                    print(f"Erro ao processar a pagina {pagina_atual}. Tentando novamente...")
+                    print(f"Erro ao processar a página {pagina_atual}. Tentando novamente...")
             else:
-                print("Erro ao resolver CAPTCHA. Tentando novamente...")
-        print(f"==== Limite de paginas atigindos {max_pagina} ====")
+                print("Erro ao resolver captcha. Tentando novamente...")
+
+        print("==== Limite de páginas atingido. Sessão finalizada. ====")
 
 if __name__ == "__main__":
     sessao = SessaoJurisprudencia()
