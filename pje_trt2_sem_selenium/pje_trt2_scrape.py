@@ -68,23 +68,22 @@ class SessaoJurisprudencia:
             print(f"Erro ao resolver o CAPTCHA: {e}")
             self.resposta_captcha = None
         
-    def enviar_documento(self):
-        """Enviando o documento (POST)"""
+    def enviar_documentos(self, pagina):
+        """Enviando documentos POST"""
         if not self.token_desafio or not self.resposta_captcha:
             print("Token de desafio ou resposta do captcha ausente.")
             return False
-
+        
         url_post = f"{URL_DOCUMENTOS}?tokenDesafio={self.token_desafio}&resposta={self.resposta_captcha}"
         payload = {
             "resposta": self.resposta_captcha,
             "tokenDesafio": self.token_desafio,
             "name": "query parameters",
-            #"andField": [self.assunto_de_interesse],
-            "paginationPosition": 1, 
+            "andField": [self.assunto_de_interesse],
             "paginationSize": self.numero_de_pagina,
+            "paginationPosition": pagina,
             "fragmentSize": 512,
             "ordenarPor": "dataPublicacao",
-
         }
         headers = {
             'Accept': 'application/json, text/plain, */*',
@@ -93,9 +92,9 @@ class SessaoJurisprudencia:
         }
         try:
             resposta = self.sessao.post(url_post, json=payload, headers=headers)
-            if resposta.status_code == 200:
+            if resposta.status_code ==200:
                 documentos = resposta.json()
-                self.salvar_documentos(documentos)  
+                self.salvar_documentos(documentos,pagina)
                 return True
             else:
                 print(f"Erro ao realizar o POST: {resposta.status_code} - {resposta.text}")
@@ -103,35 +102,38 @@ class SessaoJurisprudencia:
         except Exception as e:
             print(f"Erro ao enviar o POST: {e}")
 
-    def salvar_documentos(self, documentos):
+    def salvar_documentos(self, documentos, pagina):
         timestamp = datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
-        arquivo_nome = f"documentos_{timestamp}.json"
+        arquivo_nome = f"{self.assunto_de_interesse}_pagina_{pagina}_data_{timestamp}.json"
         pasta = "documentos"
         os.makedirs(pasta, exist_ok=True)
         caminho = os.path.join(pasta, arquivo_nome)
         try:
-            with open(caminho, 'a', encoding='utf-8',) as arquivo:
+            with open(caminho, 'w', encoding='utf-8') as arquivo:
                 json.dump(documentos, arquivo, ensure_ascii=False, indent=4)
-                print(f"Documentos salvos em: {caminho}")
+                print(f"Documentos da pagina {pagina} salvos em: {caminho}")
         except Exception as e:
-            print(f"Erro ao salvar os documentos: {e}")
+            print(f"Erro a salvar os documentos: {e}")
 
-    def inciar_sessao(self):
-        while True:
-            self.num_pagina()
-            #self.assunto_interesse()
-            print("==== Iniciando a Sessão ====")
+    def iniciar_sessao(self):
+        self.num_pagina()
+        self.assunto_interesse()
+        print("==== Iniciando a Sessão ====")
+        pagina_atual = 1
+        max_pagina = 15
+        while pagina_atual <= max_pagina:
             self.fazer_requisicao_captcha()
             if self.token_desafio and self.resposta_captcha:
-                sucesso = self.enviar_documento()
+                sucesso = self.enviar_documentos(pagina_atual)
                 if sucesso:
-                    print("==== Documentos salvos com SUCESSO.")
-                    break
+                    print(f"==== Página {pagina_atual} processada com sucesso.")
+                    pagina_atual += 1
                 else:
-                    ("Erro ao salvar os Documentos...")
+                    print(f"Erro ao processar a pagina {pagina_atual}. Tentando novamente...")
             else:
-                print("Erro ao resolver captcha. Tentanto novamente...")
+                print("Erro ao resolver CAPTCHA. Tentando novamente...")
+        print(f"==== Limite de paginas atigindos {max_pagina} ====")
 
 if __name__ == "__main__":
     sessao = SessaoJurisprudencia()
-    sessao.inciar_sessao()
+    sessao.iniciar_sessao()
