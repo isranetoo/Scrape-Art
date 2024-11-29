@@ -1,0 +1,4 @@
+for para pagina 
+for para ficar retentando o captcha ate acertar
+so 150 por pagina 
+cliente_data_pagina

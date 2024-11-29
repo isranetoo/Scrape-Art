@@ -16,16 +16,13 @@ class SessaoJurisprudencia:
         self.resposta_captcha = None
         self.assunto_de_interesse = None
         self.numero_de_pagina = None
-        self.data_de_distribuicao= None
+
 
     def num_pagina(self):
         self.numero_de_pagina = input("==== Digite o numero de pagina: ")
 
-    def data_distribuicao(self):
-        self.data_de_distribuicao = input("==== Digite a data de Distribuição ex: 2024-05-27: ")
-
     def assunto_interesse(self):
-        self.assunto_de_interesse = input("==== Digite o assunto de interesse: ")    
+        self.assunto_de_interesse = input("==== Digite o assunto de interesse: ")  
 
     def obter_ip_local(self):
         """Obtendo o IP local"""
@@ -82,20 +79,12 @@ class SessaoJurisprudencia:
             "resposta": self.resposta_captcha,
             "tokenDesafio": self.token_desafio,
             "name": "query parameters",
-            "andField": [self.assunto_de_interesse],
-            #"assunto": ["Abandono de Emprego [55200]", "Adicional de Horas Extras [55365]" , "Adicional de Horas Extras [13787]"],
-            #"classeJudicial": ["Agravo Regimental Trabalhista"],
-            #"magistrado": ["IEDA REGINA ALINERI PAULI"],
-            #"orgaoJulgador": ["10ª Turma - Cadeira 1"],
-            #"orgaoJulgadorColegiado": ["10ª Turma"],
-            #"dataPublicacao.start": "2023-10-01",
-            "dataDistribuicao.start": self.data_de_distribuicao,
-            #"dataPublicacao.end": "2024-11-01",
-            "paginationPosition": 1,
+            #"andField": [self.assunto_de_interesse],
+            "paginationPosition": 1, 
             "paginationSize": self.numero_de_pagina,
             "fragmentSize": 512,
             "ordenarPor": "dataPublicacao",
-            #"ordenarPor": "relevancia" 
+
         }
         headers = {
             'Accept': 'application/json, text/plain, */*',
@@ -129,9 +118,8 @@ class SessaoJurisprudencia:
 
     def inciar_sessao(self):
         while True:
-            self.assunto_interesse()
-            self.data_distribuicao()
             self.num_pagina()
+            #self.assunto_interesse()
             print("==== Iniciando a Sessão ====")
             self.fazer_requisicao_captcha()
             if self.token_desafio and self.resposta_captcha:
