@@ -68,37 +68,35 @@ class SessaoJurisprudencia:
             print(f"Erro ao resolver o CAPTCHA: {e}")
             self.resposta_captcha = None
         
-    def enviar_documentos(self, pagina):
-        """Enviando documentos POST"""
-        if not self.token_desafio or not self.resposta_captcha:
-            print("Token de desafio ou resposta do captcha ausente.")
-            return False
-        
-        url_post = f"{URL_DOCUMENTOS}?tokenDesafio={self.token_desafio}&resposta={self.resposta_captcha}"
-        payload = {
-            "resposta": self.resposta_captcha,
-            "tokenDesafio": self.token_desafio,
-            "name": "query parameters",
-            "andField": [self.assunto_de_interesse],
-            "paginationSize": self.numero_de_pagina,
-            "paginationPosition": pagina,
-            "fragmentSize": 512,
-            "ordenarPor": "dataPublicacao",
-        }
-        headers = {
-            'Accept': 'application/json, text/plain, */*',
-            'Content-Type': 'application/json',
-            'User-Agent': self.obter_user_agent(),
-        }
-        while True:
+    def enviar_documento(self, pagina):
+            """Enviando o documento (POST)"""
+            if not self.token_desafio or not self.resposta_captcha:
+                print("Token de desafio ou resposta do captcha ausente.")
+                return False
+
+            url_post = f"{URL_DOCUMENTOS}?tokenDesafio={self.token_desafio}&resposta={self.resposta_captcha}"
+            payload = {
+                "resposta": self.resposta_captcha,
+                "tokenDesafio": self.token_desafio,
+                "name": "query parameters",
+                "andField": [self.assunto_de_interesse],
+                "paginationPosition": pagina,
+                "paginationSize": self.numero_de_pagina,
+                "fragmentSize": 512,
+                "ordenarPor": "dataPublicacao",
+            }
+            headers = {
+                'Accept': 'application/json, text/plain, */*',
+                'Content-Type': 'application/json',
+                'User-Agent': self.obter_user_agent(),
+            }
             try:
                 resposta = self.sessao.post(url_post, json=payload, headers=headers)
                 if resposta.status_code == 200:
                     documentos = resposta.json()
                     if "mensagem" in documentos and documentos["mensagem"] == "A resposta informada é incorreta":
-                        print(f"Erro na resposta: {documentos['mensagem']}. Tentando novamente para pagina {pagina}...")
-                        self.fazer_requisicao_captcha()
-                        continue
+                        print("Resposta do CAPTCHA incorreta. Gerando novo CAPTCHA...")
+                        return False 
                     else:
                         self.salvar_documentos(documentos, pagina)
                         return True
@@ -106,12 +104,12 @@ class SessaoJurisprudencia:
                     print(f"Erro ao realizar o POST: {resposta.status_code} - {resposta.text}")
                     return False
             except Exception as e:
-                print(f"Erro ao realizar o post: {e}")
+                print(f"Erro ao enviar o POST: {e}")
                 return False
 
     def salvar_documentos(self, documentos, pagina):
         timestamp = datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
-        arquivo_nome = f"documentos_pagina_{pagina}_{timestamp}.json"
+        arquivo_nome = f"assunto_{self.assunto_de_interesse}_pagina_{pagina}_data_{timestamp}.json"
         pasta = "documentos"
         os.makedirs(pasta, exist_ok=True)
         caminho = os.path.join(pasta, arquivo_nome)
@@ -121,26 +119,27 @@ class SessaoJurisprudencia:
                 print(f"Documentos da página {pagina} salvos em: {caminho}")
         except Exception as e:
             print(f"Erro ao salvar os documentos da página {pagina}: {e}")
-
+    
     def iniciar_sessao(self):
-        self.num_pagina()
-        self.assunto_interesse()
-        print("==== Iniciando a Sessão ====")
-        pagina_atual = 1  
-        limite_paginas = 15  
-        while pagina_atual <= limite_paginas:
-            self.fazer_requisicao_captcha()
-            if self.token_desafio and self.resposta_captcha:
-                sucesso = self.enviar_documentos(pagina_atual)
-                if sucesso:
-                    print(f"==== Página {pagina_atual} processada com sucesso.")
-                    pagina_atual += 1
+            self.num_pagina()
+            self.assunto_interesse()
+            print("==== Iniciando a Sessão ====")
+            pagina_atual = 1  
+            limite_paginas = 15  
+            while pagina_atual <= limite_paginas:
+                self.fazer_requisicao_captcha()
+                if self.token_desafio and self.resposta_captcha:
+                    sucesso = self.enviar_documento(pagina_atual)
+                    if sucesso:
+                        print(f"==== Página {pagina_atual} processada com sucesso.")
+                        pagina_atual += 1 
+                    else:
+                        print(f"Erro ao processar a página {pagina_atual}. Tentando novamente...")
                 else:
-                    print(f"Erro ao processar a página {pagina_atual}. Tentando novamente...")
-            else:
-                print("Erro ao resolver captcha. Tentando novamente...")
+                    print("Erro ao resolver captcha. Tentando novamente...")
 
-        print("==== Limite de páginas atingido. Sessão finalizada. ====")
+            print("==== Limite de páginas atingido. Sessão finalizada. ====")
+
 
 if __name__ == "__main__":
     sessao = SessaoJurisprudencia()
