@@ -17,32 +17,19 @@ class SessaoJurisprudencia:
         self.assunto_de_interesse = None
         self.numero_de_pagina = None
 
-
     def num_pagina(self):
         self.numero_de_pagina = input("==== Digite o numero de Processos por pagina: ")
 
     def assunto_interesse(self):
         self.assunto_de_interesse = input("==== Digite o assunto de interesse: ")  
-
-    def obter_ip_local(self):
-        """Obtendo o IP local"""
-        try:
-            resposta = requests.get('https://api.ipify.org')
-            return resposta.text
-        except Exception as e:
-            print(f"Erro ao localizar o IP local: {e}")
-            return "IP Local NÃO disponivel"
         
-    def obter_user_agent(self):
-        return "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36"
-
     def gerar_timestamp(self):
         return datetime.now().isoformat()
 
     def fazer_requisicao_captcha(self):
             headers = {
                 'Accept': 'application/json, text/plain, */*',
-                'User-Agent': self.obter_user_agent(),
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36',
             }
             try:
                 resposta = self.sessao.get(URL_CAPTCHA, headers=headers)
@@ -88,7 +75,7 @@ class SessaoJurisprudencia:
             headers = {
                 'Accept': 'application/json, text/plain, */*',
                 'Content-Type': 'application/json',
-                'User-Agent': self.obter_user_agent(),
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36',
             }
             try:
                 resposta = self.sessao.post(url_post, json=payload, headers=headers)
@@ -126,7 +113,7 @@ class SessaoJurisprudencia:
             self.assunto_interesse()
             print("==== Iniciando a Sessão ====")
             pagina_atual = 1  
-            limite_paginas = 25  
+            limite_paginas = 15  
             while pagina_atual <= limite_paginas:
                 self.fazer_requisicao_captcha()
                 if self.token_desafio and self.resposta_captcha:
