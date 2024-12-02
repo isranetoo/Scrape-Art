@@ -108,6 +108,7 @@ class SessaoJurisprudencia:
                 return False
 
     def salvar_documentos(self, documentos, pagina):
+        """Salvando os documentos"""
         timestamp = datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
         arquivo_nome = f"assunto_{self.assunto_de_interesse}_pagina_{pagina}_data_{timestamp}.json"
         pasta = "documentos"
@@ -125,7 +126,7 @@ class SessaoJurisprudencia:
             self.assunto_interesse()
             print("==== Iniciando a Sessão ====")
             pagina_atual = 1  
-            limite_paginas = 15  
+            limite_paginas = 25  
             while pagina_atual <= limite_paginas:
                 self.fazer_requisicao_captcha()
                 if self.token_desafio and self.resposta_captcha:

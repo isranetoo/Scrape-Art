@@ -1,4 +1,0 @@
-# crie um for para  "paginationPosition": 1 aumentando +1 a cada requisição feita e salve os documentos como x_timestamp_pagina a cada requisição ou seja pagina 1 salve , pagina 2 salve 
-# crie um for para ficar retentando ate o captcha ate acertar
-# so 150 por pagina 
-# cliente_data_pagina
