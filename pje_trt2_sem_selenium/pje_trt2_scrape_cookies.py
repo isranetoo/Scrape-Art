@@ -51,9 +51,43 @@ class SessaoJurisprudencia:
             self.resposta_captcha = resposta
             print(f"Resposta do CAPTCHA: {self.resposta_captcha}")
             self.url_post = f"{URL_DOCUMENTOS}?tokenDesafio={self.token_desafio}&resposta={self.resposta_captcha}"
+            self.capturar_cookies()
         except Exception as e:
             print(f"Erro ao resolver o CAPTCHA: {e}")
             self.resposta_captcha = None
+
+    def capturar_cookies(self):
+        """Realizando uma Requisição POST para capturar os cookies"""
+        try:
+            resposta  = self.sessao.post(self.url_post)
+            resposta.raise_for_status()
+            print(f"Cabeçalhos da resposta: {resposta.headers}")
+            print(f"Cookies da resposta inicial: {resposta.cookies.get_dict()}")
+            if not resposta.cookies:
+                print("Tentando nova requisição para verificar cookies...")
+                resposta_extra = self.sessao.post(f"https://pje.trt2.jus.br/juris-backend/api/captcha")
+                resposta_extra.raise_for_status()
+                print(f"Cookies da resposta extra: {resposta_extra.cookies.get_dict()}")
+            self.salvar_cookies()
+        except Exception as e:
+            print(f"Erro ao capturar os Cookies: {e}")
+
+    def salvar_cookies(self):
+        """Salvando os cookies em um arquivo .txt"""
+        cookies = self.sessao.cookies.get_dict()
+        pasta = "cookies"
+        os.makedirs(pasta, exist_ok=True)
+        caminho = os.path.join(pasta, "cookies.txt")
+        try:
+            with open(caminho, 'w', encoding='utf-8') as arquivo:
+                if cookies:
+                    json.dump(cookies, arquivo, ensure_ascii=False, indent=4)
+                    print(f"Cookies salvos em: {caminho}")
+                else:
+                    arquivo.write("Nenhum cookie foi armazenado.")
+                    print(f"Cookies não encontrados. Arquivo salvo vazio em: {caminho}")
+        except Exception as e:
+            print(f"Erro ao salvar os cookies: {e}")
 
     def enviar_documento(self, pagina):
         """Enviando o documento (POST)"""
@@ -115,7 +149,7 @@ class SessaoJurisprudencia:
         self.assunto_interesse()
         print("==== Iniciando a Sessão ====")
         pagina_atual = 1
-        limite_paginas = 15
+        limite_paginas = 10
         while pagina_atual <= limite_paginas:
             if not self.url_post:
                 self.fazer_requisicao_captcha()
