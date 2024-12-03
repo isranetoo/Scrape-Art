@@ -15,6 +15,7 @@ class SessaoJurisprudencia:
         self.assunto_de_interesse = None
         self.numero_de_pagina = None
         self.url_post = None
+        self.cookies = {}
 
     def num_pagina(self):
         self.numero_de_pagina = input("==== Digite o número de processos por página: ")
@@ -51,33 +52,33 @@ class SessaoJurisprudencia:
             self.resposta_captcha = resposta
             print(f"Resposta do CAPTCHA: {self.resposta_captcha}")
             self.url_post = f"{URL_DOCUMENTOS}?tokenDesafio={self.token_desafio}&resposta={self.resposta_captcha}"
-            self.capturar_cookies()
+            self.coletar_e_configurar_cookie()
         except Exception as e:
             print(f"Erro ao resolver o CAPTCHA: {e}")
             self.resposta_captcha = None
 
-    def capturar_cookies(self):
-        """Realizando uma Requisição POST para capturar os cookies"""
+    def coletar_e_configurar_cookie(self):
+        """Coletando e configurando o COOKIE"""
         try:
-            resposta  = self.sessao.post(self.url_post)
-            resposta.raise_for_status()
-            print(f"Cabeçalhos da resposta: {resposta.headers}")
-            print(f"Cookies da resposta inicial: {resposta.cookies.get_dict()}")
-            if not resposta.cookies:
-                print("Tentando nova requisição para verificar cookies...")
-                resposta_extra = self.sessao.post(f"https://pje.trt2.jus.br/juris-backend/api/captcha")
-                resposta_extra.raise_for_status()
-                print(f"Cookies da resposta extra: {resposta_extra.cookies.get_dict()}")
+            self.cookies = {
+                "_ga": "GA1.3.2135935613.1731417901",
+                "_ga_9GSME7063L": "GS1.1.1731436526.3.0.1731436545.0.0.0",
+                "exibirajuda": "true",
+                "tokenDesafio": self.token_desafio,
+                "respostaDesafio": self.resposta_captcha
+            }
+            self.sessao.cookies.update(self.cookies)
             self.salvar_cookies()
+            print(f"Cookies configurado com sucesso: {self.cookies}")
         except Exception as e:
-            print(f"Erro ao capturar os Cookies: {e}")
+            print(f"Erro ao configurar os cookies: {e}")
 
     def salvar_cookies(self):
         """Salvando os cookies em um arquivo .txt"""
         cookies = self.sessao.cookies.get_dict()
         pasta = "cookies"
         os.makedirs(pasta, exist_ok=True)
-        caminho = os.path.join(pasta, "cookies.txt")
+        caminho = os.path.join(pasta, "cookies.json")
         try:
             with open(caminho, 'w', encoding='utf-8') as arquivo:
                 if cookies:
