@@ -50,11 +50,11 @@ class SessaoJurisprudencia:
             base64_string = base64_string.split(',')[1] if base64_string.startswith('data:image') else base64_string
             resposta = solve_captcha_local(base64_string)
             self.resposta_captcha = resposta
-            print(f"Resposta do CAPTCHA: {self.resposta_captcha}")
+            print(f"Resposta do CAPTCHA: \033[1;32m{self.resposta_captcha}\033[0m")
             self.url_post = f"{URL_DOCUMENTOS}?tokenDesafio={self.token_desafio}&resposta={self.resposta_captcha}"
             self.coletar_e_configurar_cookies()
         except Exception as e:
-            print(f"Erro ao resolver o CAPTCHA: {e}")
+            print(f"\033[1;31mErro ao resolver o CAPTCHA: {e}\033[0m")
             self.resposta_captcha = None
 
     def coletar_e_configurar_cookies(self):
@@ -69,9 +69,9 @@ class SessaoJurisprudencia:
             }
             self.sessao.cookies.update(self.cookies)
             self.salvar_cookies()
-            print(f"Cookies configurados com sucesso: {self.cookies}")
+            print(f"Cookies configurados com sucesso: \033[1;34m{self.cookies}\033[0m")
         except Exception as e:
-            print(f"Erro ao configurar os cookies: {e}")
+            print(f"\033[1;31mErro ao configurar os cookies:\033[0m {e}")
 
     def salvar_cookies(self):
         """Salvando os cookies em um arquivo .json"""
@@ -85,7 +85,7 @@ class SessaoJurisprudencia:
                     print(f"Cookies salvos em: {caminho}")
                 else:
                     arquivo.write("Nenhum cookie foi armazenado.")
-                    print(f"Cookies não encontrados. Arquivo salvo vazio em: {caminho}")
+                    print(f"\033[1;31mCookies não encontrados. Arquivo salvo vazio em:\033[0m {caminho}")
         except Exception as e:
             print(f"Erro ao salvar os cookies: {e}")
 
@@ -115,7 +115,7 @@ class SessaoJurisprudencia:
             if resposta.status_code == 200:
                 documentos = resposta.json()
                 if "mensagem" in documentos and documentos["mensagem"] == "A resposta informada é incorreta":
-                    print("Resposta do CAPTCHA incorreta. Gerando novo CAPTCHA...")
+                    print("\033[1;31mResposta do CAPTCHA incorreta.\033[0m Gerando novo CAPTCHA...")
                     self.url_post = None
                     return False
                 else:
@@ -140,16 +140,16 @@ class SessaoJurisprudencia:
         try:
             with open(caminho, 'w', encoding='utf-8') as arquivo:
                 json.dump(documentos, arquivo, ensure_ascii=False, indent=4)
-                print(f"Documentos da página {pagina} salvos em: {caminho}")
+                print(f"Documentos da página {pagina} salvos em: \033[1;32m{caminho}\033[0m")
         except Exception as e:
             print(f"Erro ao salvar os documentos da página {pagina}: {e}")
 
     def iniciar_sessao(self):
         self.num_pagina()
         self.assunto_interesse()
-        print("==== Iniciando a Sessão ====")
+        print("\033[1;33m==== Iniciando a Sessão ====\033[0m")
         pagina_atual = 1
-        limite_paginas = 10
+        limite_paginas = 37
         while pagina_atual <= limite_paginas:
             if not self.url_post:
                 self.fazer_requisicao_captcha()
@@ -161,7 +161,7 @@ class SessaoJurisprudencia:
                 else:
                     print(f"Erro ao processar a página {pagina_atual}. Tentando novamente...")
 
-        print("==== Limite de páginas atingido. Sessão finalizada. ====")
+        print("\033[1;33m==== Limite de páginas atingido. Sessão finalizada. ====\033[0m")
 
 
 if __name__ == "__main__":
