@@ -111,7 +111,7 @@ class SessaoJurisprudencia:
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36',
         }
         try:
-            resposta = self.sessao.post(self.url_post, json=payload, headers=headers)
+            resposta = self.sessao.post(self.url_post, json=payload, headers=headers, cookies=self.cookies)
             if resposta.status_code == 200:
                 documentos = resposta.json()
                 if "mensagem" in documentos and documentos["mensagem"] == "A resposta informada é incorreta":
@@ -149,7 +149,7 @@ class SessaoJurisprudencia:
         self.assunto_interesse()
         print("\033[1;33m==== Iniciando a Sessão ====\033[0m")
         pagina_atual = 1
-        limite_paginas = 37
+        limite_paginas = 10
         while pagina_atual <= limite_paginas:
             if not self.url_post:
                 self.fazer_requisicao_captcha()

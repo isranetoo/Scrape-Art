@@ -1,8 +1,8 @@
 import json
+import os
 from datetime import datetime
 import requests
 from captcha_local_solver import solve_captcha_local
-import os
 
 URL_CAPTCHA = 'https://pje.trt2.jus.br/juris-backend/api/captcha'
 URL_DOCUMENTOS = 'https://pje.trt2.jus.br/juris-backend/api/documentos'
@@ -12,124 +12,93 @@ class SessaoJurisprudencia:
         self.sessao = requests.Session()
         self.token_desafio = None
         self.resposta_captcha = None
-        self.assunto_de_interesse = None
-        self.numero_de_pagina = None
-        self.url_post = None
-
-    def num_pagina(self):
-        self.numero_de_pagina = input("==== Digite o número de processos por página: ")
-
-    def assunto_interesse(self):
         self.assunto_de_interesse = input("==== Digite o assunto de interesse: ")
+        self.numero_de_pagina = input("==== Digite o número de processos por página: ")
+        self.url_post = None
+        self.cookies = {}
 
     def gerar_timestamp(self):
-        return datetime.now().isoformat()
+        return datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
 
-    def fazer_requisicao_captcha(self):
-        headers = {
-            'Accept': 'application/json, text/plain, */*',
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36',
-        }
+    def _salvar_em_arquivo(self, dados, pasta, nome_arquivo):
+        os.makedirs(pasta, exist_ok=True)
+        caminho = os.path.join(pasta, nome_arquivo)
         try:
-            resposta = self.sessao.get(URL_CAPTCHA, headers=headers)
-            resposta.raise_for_status()
-            conteudo_json = resposta.json()
-            if "imagem" in conteudo_json and conteudo_json["imagem"]:
-                base64_img = conteudo_json["imagem"]
-                self.token_desafio = conteudo_json.get('tokenDesafio')
-                self.resolver_captcha(base64_img)
-            else:
-                print("Nenhum campo de imagem foi encontrado no JSON")
+            with open(caminho, 'w', encoding='utf-8') as arquivo:
+                json.dump(dados, arquivo, ensure_ascii=False, indent=4)
+                print(f"Dados salvos em: {caminho}")
         except Exception as e:
-            print(f"Erro ao encontrar a imagem no JSON: {e}")
+            print(f"Erro ao salvar dados: {e}")
 
-    def resolver_captcha(self, base64_string):
-        """Resolvendo CAPTCHA com o solve_captcha_local"""
+    def _configurar_cookies(self):
+        self.cookies = {
+            "_ga": "GA1.3.2135935613.1731417901",
+            "_ga_9GSME7063L": "GS1.1.1731436526.3.0.1731436545.0.0.0",
+            "exibirajuda": "true",
+            "tokenDesafio": self.token_desafio,
+            "respostaDesafio": self.resposta_captcha
+        }
+        self.sessao.cookies.update(self.cookies)
+        self._salvar_em_arquivo(self.cookies, "cookies", "cookies.json")
+
+    def _resolver_captcha(self, base64_string):
         try:
             base64_string = base64_string.split(',')[1] if base64_string.startswith('data:image') else base64_string
-            resposta = solve_captcha_local(base64_string)
-            self.resposta_captcha = resposta
-            print(f"Resposta do CAPTCHA: {self.resposta_captcha}")
+            self.resposta_captcha = solve_captcha_local(base64_string)
+            print(f"Resposta do CAPTCHA: \033[1;32m{self.resposta_captcha}\033[0m")
             self.url_post = f"{URL_DOCUMENTOS}?tokenDesafio={self.token_desafio}&resposta={self.resposta_captcha}"
+            self._configurar_cookies()
         except Exception as e:
             print(f"Erro ao resolver o CAPTCHA: {e}")
-            self.resposta_captcha = None
 
-    def enviar_documento(self, pagina):
-        """Enviando o documento (POST)"""
-        if not self.url_post:
-            print("URL de POST não está definida. Tentando gerar um novo CAPTCHA.")
-            return False
+    def _fazer_requisicao_captcha(self):
+        try:
+            resposta = self.sessao.get(URL_CAPTCHA, headers={'Accept': 'application/json'})
+            resposta.raise_for_status()
+            conteudo = resposta.json()
+            self.token_desafio = conteudo.get('tokenDesafio')
+            self._resolver_captcha(conteudo.get("imagem", ""))
+        except Exception as e:
+            print(f"Erro ao obter CAPTCHA: {e}")
 
+    def _enviar_documento(self, pagina):
         payload = {
+            "name": "query parameters",
             "resposta": self.resposta_captcha,
             "tokenDesafio": self.token_desafio,
-            "name": "query parameters",
             "andField": [self.assunto_de_interesse],
             "paginationPosition": pagina,
             "paginationSize": self.numero_de_pagina,
             "fragmentSize": 512,
             "ordenarPor": "dataPublicacao",
         }
-        headers = {
-            'Accept': 'application/json, text/plain, */*',
-            'Content-Type': 'application/json',
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36',
-        }
         try:
-            resposta = self.sessao.post(self.url_post, json=payload, headers=headers)
+            resposta = self.sessao.post(self.url_post, json=payload, headers={'Content-Type': 'application/json'})
             if resposta.status_code == 200:
                 documentos = resposta.json()
-                if "mensagem" in documentos and documentos["mensagem"] == "A resposta informada é incorreta":
-                    print("Resposta do CAPTCHA incorreta. Gerando novo CAPTCHA...")
+                if documentos.get("mensagem") == "A resposta informada é incorreta":
+                    print("\033[1;31mCAPTCHA incorreto.\033[0m Gerando novo...")
                     self.url_post = None
                     return False
-                else:
-                    self.salvar_documentos(documentos, pagina)
-                    return True
-            else:
-                print(f"Erro ao realizar o POST: {resposta.status_code} - {resposta.text}")
-                self.url_post = None
-                return False
+                self._salvar_em_arquivo(documentos, "documentos", f"assunto_{self.assunto_de_interesse}_pagina_{pagina}_data_{self.gerar_timestamp()}.json")
+                return True
+            print(f"Erro no POST: {resposta.status_code} - {resposta.text}")
         except Exception as e:
-            print(f"Erro ao enviar o POST: {e}")
-            self.url_post = None
-            return False
-
-    def salvar_documentos(self, documentos, pagina):
-        """Salvando os documentos"""
-        timestamp = datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
-        arquivo_nome = f"assunto_{self.assunto_de_interesse}_pagina_{pagina}_data_{timestamp}.json"
-        pasta = "documentos"
-        os.makedirs(pasta, exist_ok=True)
-        caminho = os.path.join(pasta, arquivo_nome)
-        try:
-            with open(caminho, 'w', encoding='utf-8') as arquivo:
-                json.dump(documentos, arquivo, ensure_ascii=False, indent=4)
-                print(f"Documentos da página {pagina} salvos em: {caminho}")
-        except Exception as e:
-            print(f"Erro ao salvar os documentos da página {pagina}: {e}")
+            print(f"Erro ao enviar POST: {e}")
+        self.url_post = None
+        return False
 
     def iniciar_sessao(self):
-        self.num_pagina()
-        self.assunto_interesse()
         print("==== Iniciando a Sessão ====")
-        pagina_atual = 1
-        limite_paginas = 15
-        while pagina_atual <= limite_paginas:
+        for pagina in range(1, 16):  
             if not self.url_post:
-                self.fazer_requisicao_captcha()
-            if self.url_post:
-                sucesso = self.enviar_documento(pagina_atual)
-                if sucesso:
-                    print(f"==== Página {pagina_atual} processada com sucesso.")
-                    pagina_atual += 1
-                else:
-                    print(f"Erro ao processar a página {pagina_atual}. Tentando novamente...")
-
-        print("==== Limite de páginas atingido. Sessão finalizada. ====")
+                self._fazer_requisicao_captcha()
+            if self.url_post and self._enviar_documento(pagina):
+                print(f"Página {pagina} processada com sucesso.")
+            else:
+                print(f"Erro ao processar a página {pagina}. Tentando novamente...")
+        print("==== Sessão finalizada ====")
 
 
 if __name__ == "__main__":
-    sessao = SessaoJurisprudencia()
-    sessao.iniciar_sessao()
+    SessaoJurisprudencia().iniciar_sessao()
