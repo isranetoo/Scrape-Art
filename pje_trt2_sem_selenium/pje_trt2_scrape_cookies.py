@@ -52,13 +52,13 @@ class SessaoJurisprudencia:
             self.resposta_captcha = resposta
             print(f"Resposta do CAPTCHA: {self.resposta_captcha}")
             self.url_post = f"{URL_DOCUMENTOS}?tokenDesafio={self.token_desafio}&resposta={self.resposta_captcha}"
-            self.coletar_e_configurar_cookie()
+            self.coletar_e_configurar_cookies()
         except Exception as e:
             print(f"Erro ao resolver o CAPTCHA: {e}")
             self.resposta_captcha = None
 
-    def coletar_e_configurar_cookie(self):
-        """Coletando e configurando o COOKIE"""
+    def coletar_e_configurar_cookies(self):
+        """Coleta e configura os cookies para a sessão"""
         try:
             self.cookies = {
                 "_ga": "GA1.3.2135935613.1731417901",
@@ -69,20 +69,19 @@ class SessaoJurisprudencia:
             }
             self.sessao.cookies.update(self.cookies)
             self.salvar_cookies()
-            print(f"Cookies configurado com sucesso: {self.cookies}")
+            print(f"Cookies configurados com sucesso: {self.cookies}")
         except Exception as e:
             print(f"Erro ao configurar os cookies: {e}")
 
     def salvar_cookies(self):
-        """Salvando os cookies em um arquivo .txt"""
-        cookies = self.sessao.cookies.get_dict()
+        """Salvando os cookies em um arquivo .json"""
         pasta = "cookies"
         os.makedirs(pasta, exist_ok=True)
         caminho = os.path.join(pasta, "cookies.json")
         try:
             with open(caminho, 'w', encoding='utf-8') as arquivo:
-                if cookies:
-                    json.dump(cookies, arquivo, ensure_ascii=False, indent=4)
+                if self.cookies:
+                    json.dump(self.cookies, arquivo, ensure_ascii=False, indent=4)
                     print(f"Cookies salvos em: {caminho}")
                 else:
                     arquivo.write("Nenhum cookie foi armazenado.")
@@ -91,7 +90,7 @@ class SessaoJurisprudencia:
             print(f"Erro ao salvar os cookies: {e}")
 
     def enviar_documento(self, pagina):
-        """Enviando o documento (POST)"""
+        """Enviando o documento (POST) utilizando os cookies configurados"""
         if not self.url_post:
             print("URL de POST não está definida. Tentando gerar um novo CAPTCHA.")
             return False
