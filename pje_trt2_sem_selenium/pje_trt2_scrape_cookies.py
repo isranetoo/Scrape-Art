@@ -109,6 +109,7 @@ class SessaoJurisprudencia:
             'Accept': 'application/json, text/plain, */*',
             'Content-Type': 'application/json',
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36',
+            'Cookie': "; ".join([f"{key}={value}" for key, value in self.cookies.items()])  
         }
         try:
             resposta = self.sessao.post(self.url_post, json=payload, headers=headers, cookies=self.cookies)
@@ -116,18 +117,18 @@ class SessaoJurisprudencia:
                 documentos = resposta.json()
                 if "mensagem" in documentos and documentos["mensagem"] == "A resposta informada é incorreta":
                     print("\033[1;31mResposta do CAPTCHA incorreta.\033[0m Gerando novo CAPTCHA...")
-                    self.url_post = None
+                    self.cookies = None
                     return False
                 else:
                     self.salvar_documentos(documentos, pagina)
                     return True
             else:
                 print(f"Erro ao realizar o POST: {resposta.status_code} - {resposta.text}")
-                self.url_post = None
+                self.cookies = None
                 return False
         except Exception as e:
             print(f"Erro ao enviar o POST: {e}")
-            self.url_post = None
+            self.cookies = None
             return False
 
     def salvar_documentos(self, documentos, pagina):
