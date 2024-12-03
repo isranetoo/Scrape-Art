@@ -117,18 +117,18 @@ class SessaoJurisprudencia:
                 documentos = resposta.json()
                 if "mensagem" in documentos and documentos["mensagem"] == "A resposta informada é incorreta":
                     print("\033[1;31mResposta do CAPTCHA incorreta.\033[0m Gerando novo CAPTCHA...")
-                    self.cookies = None
+                    self.url_post = None
                     return False
                 else:
                     self.salvar_documentos(documentos, pagina)
                     return True
             else:
                 print(f"Erro ao realizar o POST: {resposta.status_code} - {resposta.text}")
-                self.cookies = None
+                self.url_post = None
                 return False
         except Exception as e:
             print(f"Erro ao enviar o POST: {e}")
-            self.cookies = None
+            self.url_post = None
             return False
 
     def salvar_documentos(self, documentos, pagina):
@@ -150,7 +150,7 @@ class SessaoJurisprudencia:
         self.assunto_interesse()
         print("\033[1;33m==== Iniciando a Sessão ====\033[0m")
         pagina_atual = 1
-        limite_paginas = 10
+        limite_paginas = 15
         while pagina_atual <= limite_paginas:
             if not self.url_post:
                 self.fazer_requisicao_captcha()
