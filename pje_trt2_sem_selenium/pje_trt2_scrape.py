@@ -30,24 +30,12 @@ class SessaoJurisprudencia:
         except Exception as e:
             print(f"Erro ao salvar dados: {e}")
 
-    def _configurar_cookies(self):
-        self.cookies = {
-            "_ga": "GA1.3.2135935613.1731417901",
-            "_ga_9GSME7063L": "GS1.1.1731436526.3.0.1731436545.0.0.0",
-            "exibirajuda": "true",
-            "tokenDesafio": self.token_desafio,
-            "respostaDesafio": self.resposta_captcha
-        }
-        self.sessao.cookies.update(self.cookies)
-        self._salvar_em_arquivo(self.cookies, "cookies", "cookies.json")
-
     def _resolver_captcha(self, base64_string):
         try:
             base64_string = base64_string.split(',')[1] if base64_string.startswith('data:image') else base64_string
             self.resposta_captcha = solve_captcha_local(base64_string)
             print(f"Resposta do CAPTCHA: \033[1;32m{self.resposta_captcha}\033[0m")
             self.url_post = f"{URL_DOCUMENTOS}?tokenDesafio={self.token_desafio}&resposta={self.resposta_captcha}"
-            self._configurar_cookies()
         except Exception as e:
             print(f"Erro ao resolver o CAPTCHA: {e}")
 

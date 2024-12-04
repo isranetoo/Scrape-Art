@@ -112,7 +112,7 @@ class SessaoJurisprudencia:
             'Cookie': "; ".join([f"{key}={value}" for key, value in self.cookies.items()])  
         }
         try:
-            resposta = self.sessao.post(self.url_post, json=payload, headers=headers, cookies=self.cookies)
+            resposta = self.sessao.post(self.url_post, json=payload, headers=headers, cookies=self.sessao.cookies)
             if resposta.status_code == 200:
                 documentos = resposta.json()
                 if "mensagem" in documentos and documentos["mensagem"] == "A resposta informada é incorreta":
