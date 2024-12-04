@@ -108,8 +108,7 @@ class SessaoJurisprudencia:
         headers = {
             'Accept': 'application/json, text/plain, */*',
             'Content-Type': 'application/json',
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36',
-            'Cookie': "; ".join([f"{key}={value}" for key, value in self.cookies.items()])  
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36',             
         }
         cookies = {
                 "_ga": "GA1.3.2135935613.1731417901",
@@ -140,8 +139,8 @@ class SessaoJurisprudencia:
 
     def salvar_documentos(self, documentos, pagina):
         """Salvando os documentos"""
-        timestamp = datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
-        arquivo_nome = f"assunto_{self.assunto_de_interesse}_pagina_{pagina}_data_{timestamp}.json"
+        timestamp = datetime.now().strftime("%d-%m-%Y")
+        arquivo_nome = f"assunto_{self.assunto_de_interesse}_pagina_{pagina}_data_{timestamp}_num_{self.numero_de_pagina}.json"
         pasta = "documentos"
         os.makedirs(pasta, exist_ok=True)
         caminho = os.path.join(pasta, arquivo_nome)
@@ -157,7 +156,7 @@ class SessaoJurisprudencia:
         self.assunto_interesse()
         print("\033[1;33m==== Iniciando a Sessão ====\033[0m")
         pagina_atual = 1
-        limite_paginas = 15
+        limite_paginas = 10
         while pagina_atual <= limite_paginas:
             if not self.url_post:
                 self.fazer_requisicao_captcha()

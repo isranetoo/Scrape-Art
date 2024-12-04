@@ -15,7 +15,6 @@ class SessaoJurisprudencia:
         self.assunto_de_interesse = input("==== Digite o assunto de interesse: ")
         self.numero_de_pagina = input("==== Digite o número de processos por página: ")
         self.url_post = None
-        self.cookies = {}
 
     def gerar_timestamp(self):
         return datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
