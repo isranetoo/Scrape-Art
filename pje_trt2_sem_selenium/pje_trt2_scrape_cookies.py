@@ -111,8 +111,15 @@ class SessaoJurisprudencia:
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36',
             'Cookie': "; ".join([f"{key}={value}" for key, value in self.cookies.items()])  
         }
+        cookies = {
+                "_ga": "GA1.3.2135935613.1731417901",
+                "_ga_9GSME7063L": "GS1.1.1731436526.3.0.1731436545.0.0.0",
+                "exibirajuda": "true",
+                "tokenDesafio": self.token_desafio,
+                "respostaDesafio": self.resposta_captcha
+            }
         try:
-            resposta = self.sessao.post(self.url_post, json=payload, headers=headers, cookies=self.sessao.cookies)
+            resposta = self.sessao.post(self.url_post, json=payload, headers=headers, cookies=cookies)
             if resposta.status_code == 200:
                 documentos = resposta.json()
                 if "mensagem" in documentos and documentos["mensagem"] == "A resposta informada é incorreta":
