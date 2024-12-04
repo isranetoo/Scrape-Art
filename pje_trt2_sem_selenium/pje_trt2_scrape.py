@@ -103,7 +103,7 @@ class SessaoJurisprudencia:
         self.numero_de_pagina = self.obter_entrada("Digite o número de processos por página: ")
         self.assunto_de_interesse = self.obter_entrada("Digite o assunto de interesse: ")
         print("==== Iniciando a Sessão ====")
-        for pagina in range(1, 41):
+        for pagina in range(1, 16):
             if not self.url_post:
                 self.fazer_requisicao_captcha()
             if self.url_post and self.enviar_documento(pagina):

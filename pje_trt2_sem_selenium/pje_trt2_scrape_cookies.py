@@ -156,7 +156,7 @@ class SessaoJurisprudencia:
         self.assunto_interesse()
         print("\033[1;33m==== Iniciando a Sessão ====\033[0m")
         pagina_atual = 1
-        limite_paginas = 6
+        limite_paginas = 26
         while pagina_atual <= limite_paginas:
             if not self.url_post:
                 self.fazer_requisicao_captcha()
