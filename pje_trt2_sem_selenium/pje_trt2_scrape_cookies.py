@@ -1,8 +1,8 @@
 import json
-from datetime import datetime
 import requests
-from captcha_local_solver import solve_captcha_local
 import os
+from datetime import datetime
+from captcha_local_solver import solve_captcha_local
 
 URL_CAPTCHA = 'https://pje.trt2.jus.br/juris-backend/api/captcha'
 URL_DOCUMENTOS = 'https://pje.trt2.jus.br/juris-backend/api/documentos'
@@ -17,84 +17,53 @@ class SessaoJurisprudencia:
         self.url_post = None
         self.cookies = {}
 
-    def num_pagina(self):
+    def coletar_input(self):
         self.numero_de_pagina = input("==== Digite o número de processos por página: ")
-
-    def assunto_interesse(self):
         self.assunto_de_interesse = input("==== Digite o assunto de interesse: ")
 
-    def gerar_timestamp(self):
-        return datetime.now().isoformat()
-
     def fazer_requisicao_captcha(self):
-        headers = {
-            'Accept': 'application/json, text/plain, */*',
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36',
-        }
         try:
-            resposta = self.sessao.get(URL_CAPTCHA, headers=headers)
+            resposta = self.sessao.get(URL_CAPTCHA, headers={'Accept': 'application/json'})
             resposta.raise_for_status()
-            conteudo_json = resposta.json()
-            if "imagem" in conteudo_json and conteudo_json["imagem"]:
-                base64_img = conteudo_json["imagem"]
-                self.token_desafio = conteudo_json.get('tokenDesafio')
-                self.resolver_captcha(base64_img)
-            else:
-                print("Nenhum campo de imagem foi encontrado no JSON")
+            dados = resposta.json()
+            self.token_desafio = dados.get('tokenDesafio')
+            self.resolver_captcha(dados.get('imagem'))
         except Exception as e:
-            print(f"Erro ao encontrar a imagem no JSON: {e}")
+            print(f"Erro ao obter o CAPTCHA: {e}")
 
     def resolver_captcha(self, base64_string):
-        """Resolvendo CAPTCHA com o solve_captcha_local"""
         try:
-            base64_string = base64_string.split(',')[1] if base64_string.startswith('data:image') else base64_string
-            resposta = solve_captcha_local(base64_string)
-            self.resposta_captcha = resposta
-            print(f"Resposta do CAPTCHA: \033[1;32m{self.resposta_captcha}\033[0m")
-            self.url_post = f"{URL_DOCUMENTOS}?tokenDesafio={self.token_desafio}&resposta={self.resposta_captcha}"
-            self.coletar_e_configurar_cookies()
+            if base64_string:
+                base64_string = base64_string.split(',')[1] if base64_string.startswith('data:image') else base64_string
+                self.resposta_captcha = solve_captcha_local(base64_string)
+                print(f"Resposta do CAPTCHA: \033[1;32m{self.resposta_captcha}\033[0m")
+                self.url_post = f"{URL_DOCUMENTOS}?tokenDesafio={self.token_desafio}&resposta={self.resposta_captcha}"
+                self.configurar_cookies()
         except Exception as e:
-            print(f"\033[1;31mErro ao resolver o CAPTCHA: {e}\033[0m")
-            self.resposta_captcha = None
+            print(f"Erro ao resolver o CAPTCHA: {e}")
 
-    def coletar_e_configurar_cookies(self):
-        """Coleta e configura os cookies para a sessão"""
-        try:
-            self.cookies = {
+    def configurar_cookies(self):
+        self.cookies = {
                 "_ga": "GA1.3.2135935613.1731417901",
                 "_ga_9GSME7063L": "GS1.1.1731436526.3.0.1731436545.0.0.0",
                 "exibirajuda": "true",
                 "respostaDesafio": self.resposta_captcha,
                 "tokenDesafio": self.token_desafio,
             }
-            self.sessao.cookies.update(self.cookies)
-            self.salvar_cookies()
-            print(f"Cookies configurados com sucesso: \033[1;34m{self.cookies}\033[0m")
-        except Exception as e:
-            print(f"\033[1;31mErro ao configurar os cookies:\033[0m {e}")
+        self.sessao.cookies.update(self.cookies)
+        self.salvar_em_arquivo("cookies", "cookies.json", self.cookies)
 
-    def salvar_cookies(self):
-        """Salvando os cookies em um arquivo .json"""
-        pasta = "cookies"
+    def salvar_em_arquivo(self, pasta, nome_arquivo, conteudo):
         os.makedirs(pasta, exist_ok=True)
-        caminho = os.path.join(pasta, "cookies.json")
+        caminho = os.path.join(pasta, nome_arquivo)
         try:
             with open(caminho, 'w', encoding='utf-8') as arquivo:
-                if self.cookies:
-                    json.dump(self.cookies, arquivo, ensure_ascii=False, indent=4)
-                    print(f"Cookies salvos em: {caminho}")
-                else:
-                    arquivo.write("Nenhum cookie foi armazenado.")
-                    print(f"\033[1;31mCookies não encontrados. Arquivo salvo vazio em:\033[0m {caminho}")
+                json.dump(conteudo, arquivo, ensure_ascii=False, indent=4)
+            print(f"Arquivo salvo em: {caminho}")
         except Exception as e:
-            print(f"Erro ao salvar os cookies: {e}")
+            print(f"Erro ao salvar os arquivo: {e}")
 
     def enviar_documento(self, pagina):
-        """Enviando o documento (POST) utilizando os cookies configurados"""
-        if not self.url_post:
-            print("URL de POST não está definida. Tentando gerar um novo CAPTCHA.")
-            return False
-
         payload = {
             "resposta": self.resposta_captcha,
             "tokenDesafio": self.token_desafio,
@@ -105,72 +74,31 @@ class SessaoJurisprudencia:
             "fragmentSize": 512,
             "ordenarPor": "dataPublicacao",
         }
-        headers = {
-            'Accept': 'application/json, text/plain, */*',
-            'Content-Type': 'application/json',
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36',           
-        }
-        cookies = {
-                "_ga": "GA1.3.2135935613.1731417901",
-                "_ga_9GSME7063L": "GS1.1.1731436526.3.0.1731436545.0.0.0",
-                "exibirajuda": "true",
-                "tokenDesafio": self.token_desafio,
-                "respostaDesafio": self.resposta_captcha
-            }
         try:
-            resposta = self.sessao.post(self.url_post, json=payload, headers=headers, cookies=cookies)
+            resposta = self.sessao.post(self.url_post, json=payload, headers={'Content-Type': 'application/json'})
+            timestamp = datetime.now().strftime("%d-%m-%Y")
             if resposta.status_code == 200:
                 documentos = resposta.json()
-                if "mensagem" in documentos and documentos["mensagem"] == "A resposta informada é incorreta":
-                    print("\033[1;31mResposta do CAPTCHA incorreta.\033[0m Gerando novo CAPTCHA...")
+                if documentos.get("mensagem") == "A resposta informada é incorreta":
+                    print("\033[1;31mCAPTCHA incorreto.\033[0m Gerando novo...")
                     self.url_post = None
-                    return False
                 else:
-                    self.salvar_documentos(documentos, pagina)
+                    self.salvar_em_arquivo("documentos", f"assunto_{self.assunto_de_interesse}_pagina_{pagina}_data_{timestamp}_num_pagina_{self.numero_de_pagina}.json", documentos)
                     return True
-            else:
-                print(f"Erro ao realizar o POST: {resposta.status_code} - {resposta.text}")
-                self.url_post = None
-                return False
         except Exception as e:
-            print(f"Erro ao enviar o POST: {e}")
-            self.url_post = None
-            return False
-
-    def salvar_documentos(self, documentos, pagina):
-        """Salvando os documentos"""
-        timestamp = datetime.now().strftime("%d-%m-%Y")
-        arquivo_nome = f"assunto_{self.assunto_de_interesse}_pagina_{pagina}_data_{timestamp}_num_{self.numero_de_pagina}.json"
-        pasta = "documentos"
-        os.makedirs(pasta, exist_ok=True)
-        caminho = os.path.join(pasta, arquivo_nome)
-        try:
-            with open(caminho, 'w', encoding='utf-8') as arquivo:
-                json.dump(documentos, arquivo, ensure_ascii=False, indent=4)
-                print(f"Documentos da página {pagina} salvos em: \033[1;32m{caminho}\033[0m")
-        except Exception as e:
-            print(f"Erro ao salvar os documentos da página {pagina}: {e}")
-
+            print(f"Erro ao salvar o arquivo JSON: {e}")
+        return False
+    
     def iniciar_sessao(self):
-        self.num_pagina()
-        self.assunto_interesse()
+        self.coletar_input()
         print("\033[1;33m==== Iniciando a Sessão ====\033[0m")
-        pagina_atual = 1
-        limite_paginas = 26
-        while pagina_atual <= limite_paginas:
+        for pagina in range(1, 11):
             if not self.url_post:
                 self.fazer_requisicao_captcha()
-            if self.url_post:
-                sucesso = self.enviar_documento(pagina_atual)
-                if sucesso:
-                    print(f"==== Página {pagina_atual} processada com sucesso.")
-                    pagina_atual += 1
-                else:
-                    print(f"Erro ao processar a página {pagina_atual}. Tentando novamente...")
-
-        print("\033[1;33m==== Limite de páginas atingido. Sessão finalizada. ====\033[0m")
-
+            if self.url_post and self.enviar_documento(pagina):
+                print(f"Página \033[1;34m{pagina}\033[0m processada com \033[1;32mSucesso.\033[0m")
+            else:
+                print(f"Erro ao processar {pagina}, Tentando novamente...")
 
 if __name__ == "__main__":
-    sessao = SessaoJurisprudencia()
-    sessao.iniciar_sessao()
+    SessaoJurisprudencia().iniciar_sessao()
