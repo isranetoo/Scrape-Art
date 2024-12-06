@@ -1,6 +1,6 @@
 import json
 
-arquivo_entrada = "processos.json"
+arquivo_entrada = "processos_unificados.json"
 arquivo_saida = "informacoes_processos.json"
 
 def coletar_informacoes(arquivo, campos_para_coletar):
