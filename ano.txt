@@ -1,0 +1,182 @@
+ao salvar todos os JSONs ex: "assunto_itau_pagina_1_data_06-12-2024_num_pagina_10.json", "assunto_itau_pagina_2_data_06-12-2024_num_pagina_10.json" coletar todas as infos predefinidas coloque em um unico JSON (lista) de forma organizada como o exemplo, {
+    "documents": [
+        {
+            "processo": "1001448-14.2024.5.02.0472",
+            "anoProcesso": "2024",
+            "classeJudicial": "Ação Trabalhista - Rito Sumaríssimo",
+            "dataPublicacao": "2024-12-06"
+        },
+        {
+            "processo": "1000346-09.2021.5.02.0715",
+            "anoProcesso": "2021",
+            "classeJudicial": "Despacho",
+            "dataPublicacao": "2021-03-30"
+        }
+    ]
+}
+
+a base de todos os JSONs para serem unificados estão assim:
+{
+    "hits": 48048,
+    "documents": [
+        {
+            "sigiloso": "false",
+            "orgaoJulgadorColegiado": "Vara do Trabalho",
+            "poloAtivo": [
+                "L. V. B. B."
+            ],
+            "poloPassivo": [
+                "B. B. S.",
+                "I. R. C. L.",
+                "Z. T. E. S. L. E. R. J."
+            ],
+            "dataPublicacao": "2024-12-06",
+            "meioTramitacao": "eletrônico",
+            "classeJudicial": "Ação Trabalhista - Rito Sumaríssimo",
+            "movimentoDecisao": [
+                "Arbitradas e #{situação das custas} as custas processuais no valor de #{valor das custas}",
+                "Julgado(s) procedente(s) em parte o(s) pedido(s) (#{classe processual} / \n #{nome do incidente}) de #{nome da parte}",
+                "Concedida a gratuidade da justiça a #{nome da parte}"
+            ],
+            "assunto": [
+                "Processo e Procedimento [8960]",
+                "Multa do Artigo  477 da CLT [14000]",
+                "Ônus da Prova [13237]",
+                "Responsabilidade Solidária/Subsidiária [14034]",
+                "Rescisão do Contrato de Trabalho [13949]",
+                "Direito Individual do Trabalho [12936]",
+                "DIREITO PROCESSUAL CIVIL E DO TRABALHO [8826]",
+                "Décimo Terceiro Salário Proporcional [13995]",
+                "Aviso Prévio [13994]",
+                "DIREITO DO TRABALHO [864]",
+                "Multa do Artigo 467 da CLT [13999]",
+                "Vale Transporte [13559]",
+                "Seguro Desemprego [13969]",
+                "Provas [8990]",
+                "Multa de 40% do FGTS [13998]",
+                "Verbas Rescisórias [13970]",
+                "Saldo de Salário [14001]",
+                "Férias Proporcionais [13996]"
+            ],
+            "anoProcesso": "2024",
+            "tipoDocumento": "Sentença",
+            "highlight": {
+                "inteiroTeorHTML": [
+                    "important;text-align:justify;text-indent:4.5cm;&quot;&gt;Em depoimento, o representante da empregadora esclareceu que a autora prestou serviços para o @@juris-trt@@ITAÚ@@/juris-trt@@, parte não integrante da lide, a partir da admissão até julho de 2022, e para a 2ª reclamada a contar de agosto de 2022; a reclamante não produziu provas contrárias, capaz de refutar as informações apresentadas pelo preposto, motivo pelo qual acolho os fatos trazidos pela empresa. &lt;&#x2F;p&gt;\n  &lt;p class=&quot;corpo&quot; style=&quot;font-size:12pt;line-height:1.5;margin-left:0 !"
+                ]
+            },
+            "dataDistribuicao": "2024-10-09",
+            "instancia": "1ª Instância",
+            "linkId": "da34923b94b881ff299648d9a0f28f3d",
+            "processo": "1001448-14.2024.5.02.0472",
+            "id": "pje1_379530230",
+            "orgaoJulgador": "2ª Vara do Trabalho de São Caetano do Sul",
+            "magistrado": [
+                "CAROLINE ORSOMARZO"
+            ],
+            "classeJudicialSigla": "ATSum"
+        },
+        {
+            "sigiloso": "false",
+            "orgaoJulgadorColegiado": "Vara do Trabalho",
+            "poloAtivo": [
+                "P. C. B."
+            ],
+            "poloPassivo": [
+                "M. I. G. I. E. C. E. E.",
+                "O. D."
+            ],
+            "dataPublicacao": "2024-12-06",
+            "meioTramitacao": "eletrônico",
+            "classeJudicial": "Ação Trabalhista - Rito Sumaríssimo",
+            "movimentoDecisao": [
+                "Proferido despacho de mero expediente"
+            ],
+            "assunto": [
+                "Multa do Artigo  477 da CLT [14000]",
+                "Reconhecimento de Relação de Emprego [13722]",
+                "Rescisão do Contrato de Trabalho [13949]",
+                "Direito Individual do Trabalho [12936]",
+                "Verbas Remuneratórias, Indenizatórias e Benefícios [13831]",
+                "Horas Extras [13769]",
+                "Reflexos [13796]",
+                "Duração do Trabalho [13764]",
+                "Décimo Terceiro Salário [13843]",
+                "Aviso Prévio [13994]",
+                "DIREITO DO TRABALHO [864]",
+                "Intervalo Intrajornada [13772]",
+                "Contrato Individual de Trabalho [13707]",
+                "Multa de 40% do FGTS [13998]",
+                "FGTS [13719]",
+                "Verbas Rescisórias [13970]",
+                "Saldo de Salário [14001]",
+                "Férias Proporcionais [13996]"
+            ],
+            "anoProcesso": "2021",
+            "tipoDocumento": "Despacho",
+            "highlight": {
+                "inteiroTeorHTML": [
+                    "important;text-indent:4.5cm;&quot;&gt;- @@juris-trt@@ITAÚ@@/juris-trt@@ UNIBANCO S&#x2F;A, agência 6327, conta 23005, data de início do relacionamento não especificado:10.03.2008  &lt;&#x2F;p&gt;\n  &lt;p class=&quot;corpo&quot; style=&quot;font-size:12pt;line-height:1.5;margin-left:0 !important;text-align:justify !important;text-indent:4.5cm;&quot;&gt; &lt;&#x2F;p&gt;\n  &lt;p class=&quot;corpo&quot; style=&quot;font-size:12pt;line-height:1.5;margin-left:0 !",
+                    "important;text-indent:4.5cm;&quot;&gt;- @@juris-trt@@ITAÚ@@/juris-trt@@ UNIBANCO S&#x2F;A, agência 4093, conta 884007, data de início do relacionamento não especificado:30.10.2014&lt;&#x2F;p&gt;\n  &lt;p class=&quot;corpo&quot; style=&quot;font-size:12pt;line-height:1.5;margin-left:0 !important;text-align:justify !important;text-indent:4.5cm;&quot;&gt;- @@juris-trt@@ITAÚ@@/juris-trt@@ UNIBANCO S&#x2F;A, agência 6327, conta 8840, data de início do relacionamento não especificado:13.11.2008  &lt;&#x2F;p&gt;\n  &lt;p class=&quot;corpo&quot; style=&quot;font-size:12pt;line-height:1.5;margin-left:0 !important;text-align:justify !"
+                ]
+            },
+            "dataDistribuicao": "2021-03-30",
+            "instancia": "1ª Instância",
+            "linkId": "19edafe8c5af6d27a20e9cb731d98341",
+            "processo": "1000346-09.2021.5.02.0715",
+            "id": "pje1_380020552",
+            "orgaoJulgador": "13ª Vara do Trabalho de São Paulo - Zona Sul",
+            "magistrado": [
+                "CINARA RAQUEL ROSO"
+            ],
+            "classeJudicialSigla": "ATSum"
+        },
+        {
+            "sigiloso": "false",
+            "orgaoJulgadorColegiado": "Vara do Trabalho",
+            "poloAtivo": [
+                "M. R. L."
+            ],
+            "poloPassivo": [
+                "E. V. P.",
+                "E. V. P. JUNIOR",
+                "F. V. B. P. E. E. L.",
+                "J. S. A.",
+                "M. R. I. E. C. E.",
+                "R. S. C. H. L. M.",
+                "E. V. P. junior"
+            ],
+            "dataPublicacao": "2024-12-06",
+            "meioTramitacao": "eletrônico",
+            "classeJudicial": "Ação Trabalhista - Rito Ordinário",
+            "movimentoDecisao": [
+                "Homologado o acordo em execução ou em cumprimento de sentença (valor do acordo: #{valor do acordo})"
+            ],
+            "assunto": [
+                "Rescisão do Contrato de Trabalho [13949]",
+                "Direito Individual do Trabalho [12936]",
+                "Aviso Prévio [13994]",
+                "DIREITO DO TRABALHO [864]",
+                "Verbas Rescisórias [13970]"
+            ],
+            "anoProcesso": "2005",
+            "tipoDocumento": "Decisão",
+            "highlight": {
+                "inteiroTeorHTML": [
+                    "important;text-indent:4.5cm;&quot;&gt;O reclamante concordou que o pagamento da parcela do acordo seja efetuado mediante depósito bancário na conta de seu patrono, Wilson de Oliveira e Ricardo Fabiani de Oliveira&amp;#8211;Advocacia (CNPJ 03525476&#x2F;0001-34), no Banco @@juris-trt@@Itaú@@/juris-trt@@, Agencia 8424, Conta Corrente 99887-3 (Pix : 03.525.476&#x2F; 0001-34) valendo os comprovantes de depósito como recibos de pagamento do acordo.&lt;&#x2F;p&gt;\n  &lt;p class=&quot;corpo&quot; style=&quot;font-size:12pt;line-height:1.5;margin-left:0 !important;text-align:justify !"
+                ]
+            },
+            "dataDistribuicao": "2019-12-23",
+            "instancia": "1ª Instância",
+            "linkId": "3a1902fa8c3976efb2b4cfba6066000a",
+            "processo": "0133900-50.2005.5.02.0446",
+            "id": "pje1_380008749",
+            "orgaoJulgador": "6ª Vara do Trabalho de Santos",
+            "magistrado": [
+                "MAYRA FREIRE DE FIGUEIREDO"
+            ],
+            "classeJudicialSigla": "ATOrd"
+        },
+        
+    ]
+}
