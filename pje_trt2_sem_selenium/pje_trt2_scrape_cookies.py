@@ -8,18 +8,24 @@ URL_CAPTCHA = 'https://pje.trt2.jus.br/juris-backend/api/captcha'
 URL_DOCUMENTOS = 'https://pje.trt2.jus.br/juris-backend/api/documentos'
 
 class SessaoJurisprudencia:
-    def __init__(self):
+    def __init__(self, assunto: str, procs_por_pagina: int, max_paginas: int = 10):
+        """ Classe para pesquisa de jurisprudencia no TRT 2
+
+        Args:
+            assunto: Assunto a ser pesquisado
+            procs_por_pagina: Numero de processo em cada pagina
+            max_paginas: Numero maximo de paginas a serem coletadas
+                         Normalmente o site para de funcionar após 10k processos coletados
+        """
+        self.assunto = assunto
+        self.procs_por_pagina = procs_por_pagina
+        self.max_paginas = max_paginas
+
         self.sessao = requests.Session()
         self.token_desafio = None
         self.resposta_captcha = None
-        self.assunto_de_interesse = None
-        self.numero_de_pagina = None
         self.url_post = None
         self.cookies = {}
-
-    def coletar_input(self):
-        self.numero_de_pagina = input("==== Digite o número de processos por página: ")
-        self.assunto_de_interesse = input("==== Digite o assunto de interesse: ")
 
     def fazer_requisicao_captcha(self):
         try:
@@ -68,9 +74,9 @@ class SessaoJurisprudencia:
             "resposta": self.resposta_captcha,
             "tokenDesafio": self.token_desafio,
             "name": "query parameters",
-            "andField": [self.assunto_de_interesse],
+            "andField": [self.assunto],
             "paginationPosition": pagina,
-            "paginationSize": self.numero_de_pagina,
+            "paginationSize": self.procs_por_pagina,
             "fragmentSize": 512,
             "ordenarPor": "dataPublicacao",
         }
@@ -83,22 +89,35 @@ class SessaoJurisprudencia:
                     print("\033[1;31mCAPTCHA incorreto.\033[0m Gerando novo...")
                     self.url_post = None
                 else:
-                    self.salvar_em_arquivo("documentos", f"assunto_{self.assunto_de_interesse}_pagina_{pagina}_data_{timestamp}_num_pagina_{self.numero_de_pagina}.json", documentos)
+                    self.salvar_em_arquivo("documentos", f"assunto_{self.assunto}_pagina_{pagina}_data_{timestamp}_num_pagina_{self.procs_por_pagina}.json", documentos)
                     return True
         except Exception as e:
             print(f"Erro ao salvar o arquivo JSON: {e}")
         return False
-    
+
     def iniciar_sessao(self):
-        self.coletar_input()
         print("\033[1;33m==== Iniciando a Sessão ====\033[0m")
-        for pagina in range(1, 11):
+        max_retries = 5
+        retries, pagina = 1, 1
+        while pagina < self.max_paginas + 1:
             if not self.url_post:
-                self.fazer_requisicao_captcha()
+                if retries >= max_retries:
+                    raise Exception(f"Unable to solve {retries} captcahs in a row... stopping scrape")
+                else:
+                    self.fazer_requisicao_captcha()
+
             if self.url_post and self.enviar_documento(pagina):
                 print(f"Página \033[1;34m{pagina}\033[0m processada com \033[1;32mSucesso.\033[0m")
+                pagina += 1
             else:
                 print(f"Erro ao processar {pagina}, Tentando novamente...")
+                retries += 1
+
+
 
 if __name__ == "__main__":
-    SessaoJurisprudencia().iniciar_sessao()
+    procs_por_pagina = input("==== Digite o número de processos por página: ")
+    assunto = input("==== Digite o assunto de interesse: ")
+
+    scrapper = SessaoJurisprudencia(assunto=assunto, procs_por_pagina=procs_por_pagina)
+    scrapper = scrapper.iniciar_sessao()
