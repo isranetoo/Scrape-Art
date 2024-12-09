@@ -1,26 +1,21 @@
 import json
-import requests
 import os
+import requests
 from datetime import datetime
 from captcha_local_solver import solve_captcha_local
 
 URL_CAPTCHA = 'https://pje.trt2.jus.br/juris-backend/api/captcha'
 URL_DOCUMENTOS = 'https://pje.trt2.jus.br/juris-backend/api/documentos'
+PASTA_DOCUMENTOS = "processos"
+ARQUIVO_UNIFICADO = "processos_unificados.json"
+ARQUIVO_INFORMACOES = "informacoes_processos_completo.json"
 
 class SessaoJurisprudencia:
     def __init__(self, assunto: str, procs_por_pagina: int, max_paginas: int = 10):
-        """ Classe para pesquisa de jurisprudencia no TRT 2
-
-        Args:
-            assunto: Assunto a ser pesquisado
-            procs_por_pagina: Numero de processo em cada pagina
-            max_paginas: Numero maximo de paginas a serem coletadas
-                         Normalmente o site para de funcionar após 10k processos coletados
-        """
+        """ Classe para pesquisa de jurisprudência no TRT 2. """
         self.assunto = assunto
-        self.procs_por_pagina = procs_por_pagina
+        self.procs_por_pagina = int(procs_por_pagina)
         self.max_paginas = max_paginas
-
         self.sessao = requests.Session()
         self.token_desafio = None
         self.resposta_captcha = None
@@ -50,12 +45,10 @@ class SessaoJurisprudencia:
 
     def configurar_cookies(self):
         self.cookies = {
-                "_ga": "GA1.3.2135935613.1731417901",
-                "_ga_9GSME7063L": "GS1.1.1731436526.3.0.1731436545.0.0.0",
-                "exibirajuda": "true",
-                "respostaDesafio": self.resposta_captcha,
-                "tokenDesafio": self.token_desafio,
-            }
+            "_ga": "GA1.3.2135935613.1731417901",
+            "respostaDesafio": self.resposta_captcha,
+            "tokenDesafio": self.token_desafio,
+        }
         self.sessao.cookies.update(self.cookies)
         self.salvar_em_arquivo("cookies", "cookies.json", self.cookies)
 
@@ -67,7 +60,7 @@ class SessaoJurisprudencia:
                 json.dump(conteudo, arquivo, ensure_ascii=False, indent=4)
             print(f"Arquivo salvo em: {caminho}")
         except Exception as e:
-            print(f"Erro ao salvar os arquivo: {e}")
+            print(f"Erro ao salvar o arquivo: {e}")
 
     def enviar_documento(self, pagina):
         payload = {
@@ -89,35 +82,65 @@ class SessaoJurisprudencia:
                     print("\033[1;31mCAPTCHA incorreto.\033[0m Gerando novo...")
                     self.url_post = None
                 else:
-                    self.salvar_em_arquivo("documentos", f"assunto_{self.assunto}_pagina_{pagina}_data_{timestamp}_num_pagina_{self.procs_por_pagina}.json", documentos)
+                    nome_arquivo = f"assunto_{self.assunto}_pagina_{pagina}_data_{timestamp}.json"
+                    self.salvar_em_arquivo(PASTA_DOCUMENTOS, nome_arquivo, documentos)
                     return True
         except Exception as e:
-            print(f"Erro ao salvar o arquivo JSON: {e}")
+            print(f"Erro ao processar a página {pagina}: {e}")
         return False
 
     def iniciar_sessao(self):
         print("\033[1;33m==== Iniciando a Sessão ====\033[0m")
-        max_retries = 5
-        retries, pagina = 1, 1
-        while pagina < self.max_paginas + 1:
+        pagina, retries, max_retries = 1, 1, 5
+        while pagina <= self.max_paginas:
             if not self.url_post:
-                if retries >= max_retries:
-                    raise Exception(f"Unable to solve {retries} captcahs in a row... stopping scrape")
-                else:
-                    self.fazer_requisicao_captcha()
+                if retries > max_retries:
+                    raise Exception("Falha em resolver o CAPTCHA repetidamente. Finalizando...")
+                self.fazer_requisicao_captcha()
 
             if self.url_post and self.enviar_documento(pagina):
-                print(f"Página \033[1;34m{pagina}\033[0m processada com \033[1;32mSucesso.\033[0m")
+                print(f"Página \033[34m{pagina}\033[0m processada com sucesso!")
                 pagina += 1
+                retries = 1
             else:
-                print(f"Erro ao processar {pagina}, Tentando novamente...")
                 retries += 1
 
+def coletar_documentos(pasta_origem, arquivo_saida):
+    documentos_unificados = {"documents": []}
+    arquivos_json = [f for f in os.listdir(pasta_origem) if f.endswith('.json')]
+    for arquivo in arquivos_json:
+        try:
+            with open(os.path.join(pasta_origem, arquivo), 'r', encoding='utf-8') as f:
+                conteudo = json.load(f)
+                documentos_unificados["documents"].extend(conteudo.get("documents", []))
+        except Exception as e:
+            print(f"Erro ao processar o arquivo {arquivo}: {e}")
 
+    with open(arquivo_saida, 'w', encoding='utf-8') as f:
+        json.dump(documentos_unificados, f, ensure_ascii=False, indent=4)
+    print(f"Documentos unificados salvos em: \033[32m{arquivo_saida}\033[0m")
+
+def coletar_informacoes(arquivo_entrada, campos, arquivo_saida):
+    try:
+        with open(arquivo_entrada, 'r', encoding='utf-8') as f:
+            dados = json.load(f).get("documents", [])
+            informacoes = [
+                {campo: doc.get(campo, "Não disponível") for campo in campos}
+                for doc in dados
+            ]
+
+        with open(arquivo_saida, 'w', encoding='utf-8') as f:
+            json.dump({"processos": informacoes}, f, ensure_ascii=False, indent=4)
+        print(f"Informações salvas em: \033[32m{arquivo_saida}\033[0m")
+    except Exception as e:
+        print(f"Erro ao processar informações: {e}")
 
 if __name__ == "__main__":
-    procs_por_pagina = input("==== Digite o número de processos por página: ")
-    assunto = input("==== Digite o assunto de interesse: ")
+    procs_por_pagina = input("Digite o número de processos por página: ")
+    assunto = input("Digite o assunto de interesse: ")
+    sessao = SessaoJurisprudencia(assunto, procs_por_pagina)
+    sessao.iniciar_sessao()
 
-    scrapper = SessaoJurisprudencia(assunto=assunto, procs_por_pagina=procs_por_pagina)
-    scrapper = scrapper.iniciar_sessao()
+    coletar_documentos(PASTA_DOCUMENTOS, ARQUIVO_UNIFICADO)
+    campos = ["sigiloso", "anoProcesso", "tipoDocumento", "dataDistribuicao", "processo", "classeJudicial",  "classeJudicialSigla", "dataPublicacao", "magistrado"]
+    coletar_informacoes(ARQUIVO_UNIFICADO, campos, ARQUIVO_INFORMACOES)
