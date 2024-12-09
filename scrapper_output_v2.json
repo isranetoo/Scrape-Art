@@ -1,0 +1,264 @@
+{
+  "0000886-40.2024.5.21.0004_1": {
+    "sistema": "PJE",
+    "numero": "0000886-40.2024.5.21.0004",
+    "classe": "ATOrd",
+    "current_instance": "1",
+    "orgaoJulgador": "4\u00aa Vara do Trabalho de Natal",
+    "juizoDigital": false,
+    "segredoJustica": false,
+    "justicaGratuita": true,
+    "distribuidoEm": "2024-09-26T11:43:42.215",
+    "autuadoEm": "2024-09-26T11:43:41.894",
+    "valorDaCausa": 843631.57,
+    "envolvidos": [
+      {
+        "id_sistema": "03411657430",
+        "nome": "J. M. R. I.",
+        "tipo": "RECLAMANTE",
+        "polo": "ATIVO",
+        "tipoDocumento": "",
+        "documento": "",
+        "endereco": {},
+        "representantes": [
+          {
+            "id_sistema": "03867168466",
+            "nome": "RENE GOMES DA VEIGA PESSOA JUNIOR",
+            "tipo": "ADVOGADO",
+            "polo": "ATIVO",
+            "tipoDocumento": "CPF",
+            "documento": "038.671.684-66",
+            "endereco": {
+              "logradouro": "CARACOL",
+              "numero": "00",
+              "complemento": "BL 02 AP 302",
+              "bairro": "CANDEIAS",
+              "municipio": "JABOATAO DOS GUARARAPES",
+              "estado": "PE",
+              "cep": "54430-180"
+            }
+          }
+        ]
+      },
+      {
+        "id_sistema": "60701190000104",
+        "nome": "I. U. S. A.",
+        "tipo": "RECLAMADO",
+        "polo": "PASSIVO",
+        "tipoDocumento": "",
+        "documento": "",
+        "endereco": {},
+        "representantes": [
+          {
+            "id_sistema": "00715149539",
+            "nome": "GUSTAVO GERBASI GOMES DIAS",
+            "tipo": "ADVOGADO",
+            "polo": "PASSIVO",
+            "tipoDocumento": "CPF",
+            "documento": "007.151.495-39",
+            "endereco": {
+              "logradouro": "MONTE CONSELHO",
+              "numero": "690",
+              "complemento": "AP 402",
+              "bairro": "RIO VERMELHO",
+              "municipio": "SALVADOR",
+              "estado": "BA",
+              "cep": "41940-370"
+            }
+          }
+        ]
+      },
+      {
+        "id_sistema": "01436709482",
+        "nome": "A. A. D. B. C.",
+        "tipo": "PERITO",
+        "polo": "OUTROS",
+        "tipoDocumento": "",
+        "documento": "",
+        "endereco": {},
+        "representantes": []
+      }
+    ],
+    "assuntos": [
+      {
+        "codigo_tribunal": "13186",
+        "descricao": "Horas Extras",
+        "principal": true
+      },
+      {
+        "codigo_tribunal": "13839",
+        "descricao": "Comiss\u00f5es e Percentuais",
+        "principal": false
+      },
+      {
+        "codigo_tribunal": "14024",
+        "descricao": "Doen\u00e7a Ocupacional",
+        "principal": false
+      }
+    ],
+    "movimentacoes": [
+      {
+        "titulo": "Publicado(a) o(a) intima\u00e7\u00e3o em 19/11/2024",
+        "tipoConteudo": "HTML",
+        "data": "2024-11-18T01:55:35.152311",
+        "ativo": true,
+        "documento": false,
+        "mostrarHeaderData": true,
+        "usuarioCriador": 0
+      },
+      {
+        "titulo": "Juntada a peti\u00e7\u00e3o de Manifesta\u00e7\u00e3o",
+        "tipoConteudo": "HTML",
+        "data": "2024-10-28T07:34:04.718311",
+        "ativo": true,
+        "documento": false,
+        "usuarioCriador": "00715149539"
+      },
+      {
+        "id": 21053674,
+        "idUnicoDocumento": "9f8f421",
+        "titulo": "Ata da Audi\u00eancia",
+        "tipo": "Ata da Audi\u00eancia",
+        "tipoConteudo": "PDF",
+        "data": "2024-10-28T09:57:00.928087",
+        "ativo": true,
+        "documentoSigiloso": false,
+        "usuarioPerito": false,
+        "documento": true,
+        "publico": true,
+        "usuarioJuntada": "LUIZA EUGENIA PEREIRA ARRAES",
+        "usuarioCriador": 0,
+        "instancia": "1"
+      }
+    ]
+  },
+  "0001016-64.2023.5.21.0004_2": {
+    "numero": "0001016-64.2023.5.21.0004",
+    "classe": "RORSum",
+    "sistema": "PJE",
+    "orgaoJulgador": "Gabinete do Desembargador Jos\u00e9 Barbosa Filho",
+    "orgaoJulgadorColegiado": "Segunda Turma de Julgamento",
+    "pessoaRelator": "JOS\u00c9 BARBOSA FILHO",
+    "segredoJustica": false,
+    "justicaGratuita": false,
+    "juizoDigital": false,
+    "current_instance": "2",
+    "distribuidoEm": "2024-07-05T12:50:40.582",
+    "autuadoEm": "2024-07-05T12:50:40.556",
+    "valorDaCausa": 5000.02,
+    "envolvidos": [
+      {
+        "id_sistema": "07555835665",
+        "nome": "E. C. N.",
+        "tipo": "RECORRENTE",
+        "polo": "ATIVO/PASSIVO",
+        "tipoDocumento": "",
+        "documento": "",
+        "endereco": {},
+        "representantes": [
+          {
+            "id_sistema": "46131019649",
+            "nome": "JOSE CARLOS COSTA BORGES",
+            "tipo": "ADVOGADO",
+            "polo": "ATIVO/PASSIVO",
+            "tipoDocumento": "CPF",
+            "documento": "461.310.196-49",
+            "endereco": {
+              "logradouro": "DR JOSE ALFREDO DE PAULA",
+              "numero": "123",
+              "bairro": "CENTRO",
+              "municipio": "POUSO ALEGRE",
+              "estado": "MG",
+              "cep": "37550-005"
+            }
+          },
+          {
+            "id_sistema": "08764364674",
+            "nome": "ANDRE LUIZ MACHADO DIAS",
+            "tipo": "ADVOGADO",
+            "polo": "ATIVO/PASSIVO",
+            "tipoDocumento": "CPF",
+            "documento": "087.643.646-74",
+            "endereco": {
+              "logradouro": "RUA JOSE ALFREDO DE PAULA ",
+              "numero": "123/1",
+              "bairro": "CENTRO",
+              "municipio": "POUSO ALEGRE",
+              "estado": "MG",
+              "cep": "37550-005"
+            }
+          }
+        ]
+      },
+      {
+        "id_sistema": "60701190000104",
+        "nome": "I. U. S. A.",
+        "tipo": "RECORRENTE",
+        "polo": "ATIVO/PASSIVO",
+        "tipoDocumento": "",
+        "documento": "",
+        "endereco": {},
+        "representantes": [
+          {
+            "id_sistema": "00715149539",
+            "nome": "GUSTAVO GERBASI GOMES DIAS",
+            "tipo": "ADVOGADO",
+            "polo": "ATIVO/PASSIVO",
+            "tipoDocumento": "CPF",
+            "documento": "007.151.495-39",
+            "endereco": {
+              "logradouro": "MONTE CONSELHO",
+              "numero": "690",
+              "complemento": "AP 402",
+              "bairro": "RIO VERMELHO",
+              "municipio": "SALVADOR",
+              "estado": "BA",
+              "cep": "41940-370"
+            }
+          }
+        ]
+      }
+    ],
+    "assuntos": [
+      {
+        "id": 5760,
+        "codigo_tribunal": "13736",
+        "descricao": "Transfer\u00eancia",
+        "principal": true
+      }
+    ],
+    "movimentacoes": [
+      {
+        "titulo": "N\u00e3o acolhidos os Embargos de Declara\u00e7\u00e3o de ITAU UNIBANCO S.A. - CNPJ: NN.NNN.NNN/NNNN-NN",
+        "tipoConteudo": "HTML",
+        "data": "2024-11-22T11:28:54.729",
+        "ativo": true,
+        "documento": false,
+        "mostrarHeaderData": true
+      },
+      {
+        "titulo": "N\u00e3o acolhidos os Embargos de Declara\u00e7\u00e3o de EDNALVA CUSTODIO NUNES - CPF: NNN.NNN.NNN-NN",
+        "tipoConteudo": "HTML",
+        "data": "2024-11-22T11:28:54.245",
+        "ativo": true,
+        "documento": false
+      },
+      {
+        "id": 11243291,
+        "idUnicoDocumento": "ae6d384",
+        "titulo": "Ac\u00f3rd\u00e3o",
+        "tipo": "Ac\u00f3rd\u00e3o",
+        "tipoConteudo": "HTML",
+        "data": "2024-11-22T06:22:10.978",
+        "ativo": true,
+        "documentoSigiloso": false,
+        "usuarioPerito": false,
+        "documento": true,
+        "publico": true,
+        "usuarioJuntada": "JOS\u00c9 BARBOSA FILHO",
+        "usuarioCriador": 0,
+        "instancia": "2"
+      }
+    ]
+  }
+}

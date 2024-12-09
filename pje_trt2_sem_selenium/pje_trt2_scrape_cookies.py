@@ -138,18 +138,36 @@ def coletar_documentos(pasta_origem, arquivo_saida):
         json.dump(documentos_unificados, f, ensure_ascii=False, indent=4)
     print(f"Documentos unificados salvos em: \033[32m{arquivo_saida}\033[0m")
 
-def coletar_informacoes(arquivo_entrada, campos, arquivo_saida):
-    """Coleta as informacões do processos_unificados.json e as filtras em outro arquivo informacoes_processos_completo.json"""
+def coletar_informacoes(arquivo_entrada, arquivo_saida):
+    """
+    Coleta as informações do processos_unificados.json e as filtra em outro arquivo JSON informacoes_processos_completo.json
+    com o formato BD e valores nulos para campos ausentes.
+    """
     try:
         with open(arquivo_entrada, 'r', encoding='utf-8') as f:
             dados = json.load(f).get("documents", [])
-            informacoes = [
-                {campo: doc.get(campo, "Não disponível") for campo in campos}
-                for doc in dados
-            ]
 
+        informacoes = {}
+        for doc in dados:
+            numero_processo = doc.get("processo", "desconhecido")
+            informacoes[numero_processo] = {
+                "sistema": doc.get("sistema", "PJE"),
+                "numero": doc.get("processo", None),
+                "classe": doc.get("classeJudicialSigla", None),
+                "current_instance": doc.get("instancia", None),
+                "orgaoJulgador": doc.get("orgaoJulgador", None),
+                "juizoDigital": doc.get("meioTramitacao", None),
+                "segredoJustica": doc.get("sigiloso", None),
+                "justicaGratuita": doc.get("justicaGratuita", None),
+                "distribuidoEm": doc.get("dataDistribuicao", None),
+                "autuadoEm": doc.get("dataPublicacao", None),
+                "valorDaCausa": doc.get("valorCausa", None),
+                "envolvidos": doc.get("envolvidos", []),
+                "assuntos": doc.get("assuntos", []),
+                "movimentacoes": doc.get("movimentacoes", [])
+            }
         with open(arquivo_saida, 'w', encoding='utf-8') as f:
-            json.dump({"processos": informacoes}, f, ensure_ascii=False, indent=4)
+            json.dump(informacoes, f, ensure_ascii=False, indent=4)
         print(f"Informações salvas em: \033[32m{arquivo_saida}\033[0m")
     except Exception as e:
         print(f"Erro ao processar informações: {e}")
