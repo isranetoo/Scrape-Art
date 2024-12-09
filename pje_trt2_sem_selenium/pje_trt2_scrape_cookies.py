@@ -138,7 +138,7 @@ def coletar_documentos(pasta_origem, arquivo_saida):
         json.dump(documentos_unificados, f, ensure_ascii=False, indent=4)
     print(f"Documentos unificados salvos em: \033[32m{arquivo_saida}\033[0m")
 
-def coletar_informacoes(arquivo_entrada, arquivo_saida):
+def coletar_informacoes(arquivo_entrada, campos, arquivo_saida):
     """
     Coleta as informações do processos_unificados.json e as filtra em outro arquivo JSON informacoes_processos_completo.json
     com o formato BD e valores nulos para campos ausentes.
