@@ -12,7 +12,18 @@ ARQUIVO_INFORMACOES = "informacoes_processos_completo.json"
 
 class SessaoJurisprudencia:
     def __init__(self, assunto: str, procs_por_pagina: int, max_paginas: int = 10):
-        """ Classe para pesquisa de jurisprudência no TRT 2. """
+        """ Classe para pesquisa de jurisprudência no TRT 2. 
+
+        Arquivos: 
+            processos: pasta com todos o processos unificados com o filtro
+            processos_unificados.json: Arquivo com todos os processos sem filtro
+            informacoes_processos_completo.json: 
+        Args: 
+            assunto: Assunto para pesquisa interessada
+            procs_por_pagina: Processos por pagina para ser pesquisado
+            max_paginas: numero de paginas a ser pesquisada
+        
+        """
         self.assunto = assunto
         self.procs_por_pagina = int(procs_por_pagina)
         self.max_paginas = max_paginas
@@ -23,6 +34,7 @@ class SessaoJurisprudencia:
         self.cookies = {}
 
     def fazer_requisicao_captcha(self):
+        """Fazer a requisicao do captcha para ser resolvido (GET)"""
         try:
             resposta = self.sessao.get(URL_CAPTCHA, headers={'Accept': 'application/json'})
             resposta.raise_for_status()
@@ -33,6 +45,7 @@ class SessaoJurisprudencia:
             print(f"Erro ao obter o CAPTCHA: {e}")
 
     def resolver_captcha(self, base64_string):
+        """Resolve o CAPTCHA com o solver_captcha_local"""
         try:
             if base64_string:
                 base64_string = base64_string.split(',')[1] if base64_string.startswith('data:image') else base64_string
@@ -44,6 +57,7 @@ class SessaoJurisprudencia:
             print(f"Erro ao resolver o CAPTCHA: {e}")
 
     def configurar_cookies(self):
+        """Configura e salva o cookie da sessão"""
         self.cookies = {
             "_ga": "GA1.3.2135935613.1731417901",
             "respostaDesafio": self.resposta_captcha,
@@ -53,6 +67,7 @@ class SessaoJurisprudencia:
         self.salvar_em_arquivo("cookies", "cookies.json", self.cookies)
 
     def salvar_em_arquivo(self, pasta, nome_arquivo, conteudo):
+        """Salva os arquivos necessario do programa"""
         os.makedirs(pasta, exist_ok=True)
         caminho = os.path.join(pasta, nome_arquivo)
         try:
@@ -63,6 +78,7 @@ class SessaoJurisprudencia:
             print(f"Erro ao salvar o arquivo: {e}")
 
     def enviar_documento(self, pagina):
+        """Envia os itens necessarios para a coleta dos processos"""
         payload = {
             "resposta": self.resposta_captcha,
             "tokenDesafio": self.token_desafio,
@@ -90,6 +106,7 @@ class SessaoJurisprudencia:
         return False
 
     def iniciar_sessao(self):
+        """Inicia a sessão na ordem correta necessaria para o programa funcionar"""
         print("\033[1;33m==== Iniciando a Sessão ====\033[0m")
         pagina, retries, max_retries = 1, 1, 5
         while pagina <= self.max_paginas:
@@ -106,6 +123,7 @@ class SessaoJurisprudencia:
                 retries += 1
 
 def coletar_documentos(pasta_origem, arquivo_saida):
+    """Coleta as paginas dos processos e as unifica em um unico arquivo processos_unificados.json """
     documentos_unificados = {"documents": []}
     arquivos_json = [f for f in os.listdir(pasta_origem) if f.endswith('.json')]
     for arquivo in arquivos_json:
@@ -121,6 +139,7 @@ def coletar_documentos(pasta_origem, arquivo_saida):
     print(f"Documentos unificados salvos em: \033[32m{arquivo_saida}\033[0m")
 
 def coletar_informacoes(arquivo_entrada, campos, arquivo_saida):
+    """Coleta as informacões do processos_unificados.json e as filtras em outro arquivo informacoes_processos_completo.json"""
     try:
         with open(arquivo_entrada, 'r', encoding='utf-8') as f:
             dados = json.load(f).get("documents", [])
@@ -142,5 +161,5 @@ if __name__ == "__main__":
     sessao.iniciar_sessao()
 
     coletar_documentos(PASTA_DOCUMENTOS, ARQUIVO_UNIFICADO)
-    campos = ["sigiloso", "anoProcesso", "tipoDocumento", "dataDistribuicao", "processo", "classeJudicial",  "classeJudicialSigla", "dataPublicacao", "magistrado"]
+    campos = ["sigiloso", "anoProcesso", "tipoDocumento",  "instancia", "dataDistribuicao", "processo", "classeJudicial",  "classeJudicialSigla", "dataPublicacao", "orgaoJulgador", "magistrado"]
     coletar_informacoes(ARQUIVO_UNIFICADO, campos, ARQUIVO_INFORMACOES)
