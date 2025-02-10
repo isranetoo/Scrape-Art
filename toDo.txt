@@ -1,0 +1,31 @@
+1. Ajustar o "assunto_principal para UM unico assunto e não varios
+
+2.
+
+3. Fazer uma função para baixar PDF de cada processo para pegar os reclamantes
+
+4. Fazer uma função que leia a primeira pagina do PDF que sera baixado para que possa coletar o valor da causa
+
+
+Primeiro pega o link que esta aqui 
+//*[@id="divListaResultados"]/mat-list-item[1]/div/div[2]/div[1]/a
+
+junte o link coletado /jurisprudencia/8c92cffd44217fe37b0a05bdc5b7852b com https://pje.trt2.jus.br/
+
+junto = https://pje.trt2.jus.br/jurisprudencia/8c92cffd44217fe37b0a05bdc5b7852b
+
+resolver o CAPTCHA
+
+a pagina com todos os dados estao no link junto
+
+para chegar aqui necessita de CAPTCHA
+
+os dados estao em preview
+
+
+
+
+
+
+
+
