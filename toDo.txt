@@ -1,31 +1,74 @@
-1. Ajustar o "assunto_principal para UM unico assunto e não varios
+2. Fazer uma função para entrar no link de cada processo para pegar os reclamantes e possivelmente o valor da causa
 
-2.
+   link_processo = //*[@id="divListaResultados"]/mat-list-item[1]/div/div[2]/div[1]/a
 
-3. Fazer uma função para baixar PDF de cada processo para pegar os reclamantes
+   BASE_URL: https://pje.trt2.jus.br/  
+   link_processo: EXEMPLO: /jurisprudencia/8c92cffd44217fe37b0a05bdc5b7852b  
+   para entrar no link URL_final o Captcha necessita ser resolvido de novo
+   URL_final: https://pje.trt2.jus.br/jurisprudencia/8c92cffd44217fe37b0a05bdc5b7852b
 
-4. Fazer uma função que leia a primeira pagina do PDF que sera baixado para que possa coletar o valor da causa
+    CNPNJ: //*[@id="inteiroTeorHTML"]/main/div/div[1]/ul[1]/li[1]
+    CPF: //*[@id="inteiroTeorHTML"]/main/div/div[1]/ul[1]/li[2]
+    CPF: //*[@id="inteiroTeorHTML"]/main/div/div[1]/ul[1]/li[3]
+    mostre no terminal o resultado
+
+def download_pdf(self, cdacordao, numero_processo):
+
+        if not os.path.exists(TEMP_DIR):
+            os.makedirs(TEMP_DIR)
+
+        url = f"https://pje.trt2.jus.br/{link_processo}"
+        caminho_pdf = os.path.join(TEMP_DIR, f"{numero_processo}.pdf")
+
+        try:
+            print(f"Baixando PDF para o processo {numero_processo}")
+            response = requests.get(url)
+            if response.status_code == 200:
+                with open(caminho_pdf, 'wb') as f:
+                    f.write(response.content)
+                print(f"PDF salvo com sucesso: {caminho_pdf}")
+
+                resultados_pdf = process_pdf(caminho_pdf)
+                return caminho_pdf, resultados_pdf
+            else:
+                print(f"Falha ao baixar PDF. Código de status: {response.status_code}")
+                return None, None
+        except Exception as e:
+            print(f"Erro ao baixar PDF: {str(e)}")
+            return None, None
 
 
-Primeiro pega o link que esta aqui 
+3. Fazer uma função que leia a primeira pagina do PDF que sera baixado para que possa coletar o valor da causa
+
+__________________________________________________________________________________
+
+1. Localize e extraia o link da primeira ocorrência do seletor XPath:  
+   //*[@id="divListaResultados"]/mat-list-item[1]/div/div[2]/div[1]/a
+
+2. Construa a URL completa concatenando o link extraído com a base:  
+   BASE_URL: https://pje.trt2.jus.br/  
+   link_processo: /jurisprudencia/8c92cffd44217fe37b0a05bdc5b7852b  
+   URL_final: https://pje.trt2.jus.br/jurisprudencia/8c92cffd44217fe37b0a05bdc5b7852b
+
+3. Resolver o CAPTCHA necessário para acessar a página de detalhes:  
+   - Se for um CAPTCHA simples (reCAPTCHA v2/v3), utilize um serviço de resolução de CAPTCHA ou técnicas de automação como OCR e simulação de comportamento humano.  
+   - Caso seja um CAPTCHA mais avançado, pode ser necessário um serviço externo (ex: 2Captcha, Anti-Captcha).  
+
+4. Acessar a página completa no link gerado após resolver o CAPTCHA.  
+
+5. Extrair os dados da seção de preview que contém as informações desejadas.
+
+
+CNPNJ: //*[@id="inteiroTeorHTML"]/main/div/div[1]/ul[1]/li[1]
+CPF: //*[@id="inteiroTeorHTML"]/main/div/div[1]/ul[1]/li[2]
+CPF: //*[@id="inteiroTeorHTML"]/main/div/div[1]/ul[1]/li[3]
+
+
+para coletar o link_processo esta nesses XPath que ira mudar de acordo com o numero e esta em href
 //*[@id="divListaResultados"]/mat-list-item[1]/div/div[2]/div[1]/a
-
-junte o link coletado /jurisprudencia/8c92cffd44217fe37b0a05bdc5b7852b com https://pje.trt2.jus.br/
-
-junto = https://pje.trt2.jus.br/jurisprudencia/8c92cffd44217fe37b0a05bdc5b7852b
-
-resolver o CAPTCHA
-
-a pagina com todos os dados estao no link junto
-
-para chegar aqui necessita de CAPTCHA
-
-os dados estao em preview
+//*[@id="divListaResultados"]/mat-list-item[2]/div/div[2]/div[1]/a
+//*[@id="divListaResultados"]/mat-list-item[3]/div/div[2]/div[1]/a
 
 
-
-
-
-
-
-
+    link_processo_exemplo = "/jurisprudencia/8c92cffd44217fe37b0a05bdc5b7852b"
+    sessao.obter_detalhes_processo(link_processo_exemplo)

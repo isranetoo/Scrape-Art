@@ -1,9 +1,11 @@
 import json
 import os
 import requests
+from bs4 import BeautifulSoup
 from datetime import datetime
 from captcha_local_solver import solve_captcha_local
 from parsing import parse_cnj
+from lxml import etree
 
 URL_CAPTCHA = 'https://pje.trt2.jus.br/juris-backend/api/captcha'
 URL_DOCUMENTOS = 'https://pje.trt2.jus.br/juris-backend/api/documentos'
@@ -105,6 +107,22 @@ class Bot_trt2_pje_scrape:
             print(f"Erro ao processar a página {pagina}: {e}")
         return False
 
+    def coletar_links_processos(self, pagina_html):
+        """Coleta os links dos processos da página de resultados"""
+        try:
+            parser = etree.HTMLParser()
+            tree = etree.fromstring(pagina_html, parser)
+            links_processos = []
+            for i in range(1, 5):  
+                xpath = f'//*[@id="divListaResultados"]/mat-list-item[{i}]/div/div[2]/div[1]/a'
+                link = tree.xpath(xpath)
+                if link:
+                    links_processos.append(link[0].get('href'))
+            return links_processos
+        except Exception as e:
+            print(f"Erro ao coletar links dos processos: {e}")
+            return []
+
     def iniciar_sessao(self):
         """Inicia a sessão na ordem correta necessaria para o programa funcionar"""
         print("\033[1;33m==== Iniciando a Sessão ====\033[0m")
@@ -117,10 +135,41 @@ class Bot_trt2_pje_scrape:
 
             if self.url_post and self.enviar_documento(pagina):
                 print(f"Página \033[34m{pagina}\033[0m processada com sucesso!")
+                pagina_html = self.sessao.get(self.url_post).text
+                links_processos = self.coletar_links_processos(pagina_html)
+                for link in links_processos:
+                    self.obter_detalhes_processo(link)
                 pagina += 1
                 retries = 1
             else:
                 retries += 1
+
+    def obter_detalhes_processo(self, link_processo):
+        """Entra no link do processo para obter detalhes como reclamantes e valor da causa"""
+        try:
+            self.fazer_requisicao_captcha()  
+            url_final = f"https://pje.trt2.jus.br{link_processo}"
+            resposta = self.sessao.get(url_final, headers={'Accept': 'application/json'})
+            resposta.raise_for_status()
+            pagina = resposta.text
+
+            parser = etree.HTMLParser()
+            tree = etree.fromstring(pagina, parser)
+
+            cnpj = tree.xpath('//*[@id="inteiroTeorHTML"]/main/div/div[1]/ul[1]/li[1]/text()')
+            cpf1 = tree.xpath('//*[@id="inteiroTeorHTML"]/main/div/div[1]/ul[1]/li[2]/text()')
+            cpf2 = tree.xpath('//*[@id="inteiroTeorHTML"]/main/div/div[1]/ul[1]/li[3]/text()')
+
+            cnpj = cnpj[0].strip() if cnpj else "N/A"
+            cpf1 = cpf1[0].strip() if cpf1 else "N/A"
+            cpf2 = cpf2[0].strip() if cpf2 else "N/A"
+
+            print(f"CNPJ: {cnpj}")
+            print(f"CPF 1: {cpf1}")
+            print(f"CPF 2: {cpf2}")
+
+        except Exception as e:
+            print(f"Erro ao obter detalhes do processo: {e}")
 
 def coletar_documentos(pasta_origem, arquivo_saida):
     """Coleta as paginas dos processos e as unifica em um unico arquivo processos_unificados.json """
@@ -176,7 +225,7 @@ def coletar_informacoes(arquivo_entrada, campos, arquivo_saida):
                                 "classe": doc.get("classeJudicialSigla", None),
                                 "orgao_julgador": doc.get("orgaoJulgador", None),
                                 "justica_gratuita": doc.get("justicaGratuita", None),
-                                "assunto_principal": None,
+                                "assunto_principal": doc.get("assunto", [None])[0],
                                 "assuntos": doc.get("assunto", []),
                                 "envolvidos": [
                                     {
@@ -184,7 +233,7 @@ def coletar_informacoes(arquivo_entrada, campos, arquivo_saida):
                                         "tipo": doc.get("reclamante", "RECLAMANTE"),
                                         "polo": doc.get("polo", "ATIVO"),
                                         "id_sistema": {
-                                            "login": doc.get("id", None),
+                                            "login": None,
                                         },
                                         "documento": [
                                             {"tipo": "CPF", "uf": None, "valor": None}
@@ -196,7 +245,7 @@ def coletar_informacoes(arquivo_entrada, campos, arquivo_saida):
                                                 "tipo": "ADVOGADO",
                                                 "polo": "ATIVO",
                                                 "id_sistema": {
-                                                    "login": doc.get("id", None),
+                                                    "login": None,
                                                 },
                                                 "documento": [
                                                     {"tipo": "CPF", "uf": None, "valor": doc.get("cpf", None)},
@@ -220,7 +269,7 @@ def coletar_informacoes(arquivo_entrada, campos, arquivo_saida):
                                         "tipo": doc.get("reclamado", "RECLAMADO"),
                                         "polo": doc.get("polo", "PASSIVO"),
                                         "id_sistema": {
-                                            "login": doc.get("id", None),
+                                            "login": None,
                                         },
                                         "documento": [
                                             {"tipo": "CPF", "uf": None, "valor": None}
