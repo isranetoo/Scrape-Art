@@ -1,7 +1,6 @@
 import json
 import os
 import requests
-from bs4 import BeautifulSoup
 from datetime import datetime
 from captcha_local_solver import solve_captcha_local
 from parsing import parse_cnj
@@ -14,7 +13,7 @@ ARQUIVO_UNIFICADO = "processos_unificados.json"
 ARQUIVO_INFORMACOES = "informacoes_processos_completo.json"
 
 class Bot_trt2_pje_scrape:
-    def __init__(self, assunto: str, procs_por_pagina: int, max_paginas: int = 10):
+    def __init__(self, assunto: str, procs_por_pagina: int, max_paginas: int = 0):
         """ Classe para pesquisa de jurisprudência no TRT 2. 
 
         Arquivos: 
@@ -108,7 +107,7 @@ class Bot_trt2_pje_scrape:
         return False
 
     def coletar_links_processos(self, pagina_html):
-        """Coleta os links dos processos da página de resultados"""
+        """Coleta os links dos processos da página de resultados e os exibe no terminal"""
         try:
             parser = etree.HTMLParser()
             tree = etree.fromstring(pagina_html, parser)
@@ -117,7 +116,8 @@ class Bot_trt2_pje_scrape:
                 xpath = f'//*[@id="divListaResultados"]/mat-list-item[{i}]/div/div[2]/div[1]/a'
                 link = tree.xpath(xpath)
                 if link:
-                    links_processos.append(link[0].get('href'))
+                    href = link[0].get('href')
+                    links_processos.append(href)
             return links_processos
         except Exception as e:
             print(f"Erro ao coletar links dos processos: {e}")
@@ -144,32 +144,33 @@ class Bot_trt2_pje_scrape:
             else:
                 retries += 1
 
-    def obter_detalhes_processo(self, link_processo):
-        """Entra no link do processo para obter detalhes como reclamantes e valor da causa"""
+    def salvar_link_ids(self, arquivo_unificado, arquivo_link_ids):
+        """Extrai e salva os linkIds dos documentos em um arquivo separado"""
         try:
-            self.fazer_requisicao_captcha()  
-            url_final = f"https://pje.trt2.jus.br{link_processo}"
-            resposta = self.sessao.get(url_final, headers={'Accept': 'application/json'})
-            resposta.raise_for_status()
-            pagina = resposta.text
-
-            parser = etree.HTMLParser()
-            tree = etree.fromstring(pagina, parser)
-
-            cnpj = tree.xpath('//*[@id="inteiroTeorHTML"]/main/div/div[1]/ul[1]/li[1]/text()')
-            cpf1 = tree.xpath('//*[@id="inteiroTeorHTML"]/main/div/div[1]/ul[1]/li[2]/text()')
-            cpf2 = tree.xpath('//*[@id="inteiroTeorHTML"]/main/div/div[1]/ul[1]/li[3]/text()')
-
-            cnpj = cnpj[0].strip() if cnpj else "N/A"
-            cpf1 = cpf1[0].strip() if cpf1 else "N/A"
-            cpf2 = cpf2[0].strip() if cpf2 else "N/A"
-
-            print(f"CNPJ: {cnpj}")
-            print(f"CPF 1: {cpf1}")
-            print(f"CPF 2: {cpf2}")
-
+            with open(arquivo_unificado, 'r', encoding='utf-8') as f:
+                dados = json.load(f)
+                
+            link_ids = []
+            for doc in dados.get("documents", []):
+                link_id = doc.get("linkId")
+                if link_id:
+                    link_ids.append(link_id)
+            
+            with open(arquivo_link_ids, 'w', encoding='utf-8') as f:
+                json.dump({"link_ids": link_ids}, f, ensure_ascii=False, indent=4)
+            print(f"LinkIds salvos em: \033[32m{arquivo_link_ids}\033[0m")
+            return True
         except Exception as e:
-            print(f"Erro ao obter detalhes do processo: {e}")
+            print(f"Erro ao salvar linkIds: {e}")
+            return False
+
+    def run(self):
+        """Run the bot to start the session and process documents."""
+        self.iniciar_sessao()
+        coletar_documentos(PASTA_DOCUMENTOS, ARQUIVO_UNIFICADO)
+        self.salvar_link_ids(ARQUIVO_UNIFICADO, "link_ids.json")
+        campos = ["sigiloso", "anoProcesso", "tipoDocumento", "instancia", "dataDistribuicao", "processo", "classeJudicial", "classeJudicialSigla", "dataPublicacao", "orgaoJulgador", "magistrado"]
+        coletar_informacoes(ARQUIVO_UNIFICADO, campos, ARQUIVO_INFORMACOES)
 
 def coletar_documentos(pasta_origem, arquivo_saida):
     """Coleta as paginas dos processos e as unifica em um unico arquivo processos_unificados.json """
@@ -201,6 +202,7 @@ def coletar_informacoes(arquivo_entrada, campos, arquivo_saida):
             numero_processo = doc.get("processo", None)
             area_code, tribunal_code, vara_code, ano, area, tribunal = parse_cnj(numero_processo) if numero_processo else (None, None, None, None, None, None)
             informacoes = {
+                "linkId": doc.get("linkId", None),
                 "numero": numero_processo,
                 "area_code": area_code,
                 "tribunal_code": tribunal_code,
@@ -367,8 +369,10 @@ if __name__ == "__main__":
     procs_por_pagina = input("Digite o número de processos por página: ")
     assunto = input("Digite o assunto de interesse: ")
     sessao = Bot_trt2_pje_scrape(assunto, procs_por_pagina)
-    sessao.iniciar_sessao()
+    sessao.run()
 
     coletar_documentos(PASTA_DOCUMENTOS, ARQUIVO_UNIFICADO)
     campos = ["sigiloso", "anoProcesso", "tipoDocumento",  "instancia", "dataDistribuicao", "processo", "classeJudicial",  "classeJudicialSigla", "dataPublicacao", "orgaoJulgador", "magistrado"]
     coletar_informacoes(ARQUIVO_UNIFICADO, campos, ARQUIVO_INFORMACOES)
+
+    

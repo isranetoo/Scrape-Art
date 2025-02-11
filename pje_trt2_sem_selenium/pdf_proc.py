@@ -1,0 +1,145 @@
+import requests
+from lxml import etree
+from captcha_local_solver import solve_captcha_local
+from datetime import datetime
+import json
+
+class PdfProcessor:
+    def __init__(self, link_id):
+        self.URL_CAPTCHA = 'https://pje.trt2.jus.br/juris-backend/api/captcha'
+        self.URL_PAGE = f'https://pje.trt2.jus.br/juris-backend/api/documentos/{link_id}'
+        self.sessao = requests.Session()
+        self.token_desafio = None
+        self.resposta_captcha = None
+        self.cookies = {}
+
+    def fazer_requisicao_captcha(self):
+        """Fazer a requisicao do captcha para ser resolvido (GET)"""
+        try:
+            resposta = self.sessao.get(self.URL_CAPTCHA, headers={'Accept': 'application/json'})
+            resposta.raise_for_status()
+            dados = resposta.json()
+            self.token_desafio = dados.get('tokenDesafio')
+            self.resolver_captcha(dados.get('imagem'))
+            return True
+        except Exception as e:
+            print(f"Erro ao obter o CAPTCHA: {e}")
+            return False
+
+    def resolver_captcha(self, base64_string):
+        """Resolve o CAPTCHA usando o solver local"""
+        try:
+            if base64_string:
+                base64_string = base64_string.split(',')[1] if base64_string.startswith('data:image') else base64_string
+                self.resposta_captcha = solve_captcha_local(base64_string)
+                print(f"Resposta do CAPTCHA: \033[1;32m{self.resposta_captcha}\033[0m")
+                self.configurar_cookies()
+        except Exception as e:
+            print(f"Erro ao resolver o CAPTCHA: {e}")
+
+    def configurar_cookies(self):
+        """Configura os cookies da sessão"""
+        self.cookies = {
+            "_ga": "GA1.3.2135935613.1731417901",
+            "respostaDesafio": self.resposta_captcha,
+            "tokenDesafio": self.token_desafio,
+        }
+        self.sessao.cookies.update(self.cookies)
+
+    def acessar_pagina(self):
+        """Acessa a página inicial"""
+        try:
+            resposta = self.sessao.post(self.URL_PAGE)
+            resposta.raise_for_status()
+            return True
+        except Exception as e:
+            print(f"Erro ao acessar a página inicial: {e}")
+            return False
+
+    def acessar_pagina_com_captcha(self):
+        """Acessa a página protegida pelo CAPTCHA"""
+        max_tentativas = 10
+        for tentativa in range(max_tentativas):
+            if not self.fazer_requisicao_captcha():
+                continue
+
+            try:
+                url_post = f"{self.URL_PAGE}?tokenDesafio={self.token_desafio}&resposta={self.resposta_captcha}"
+                resposta = self.sessao.post(url_post)
+                resposta.raise_for_status()
+
+                if "A resposta informada é incorreta" in resposta.text:
+                    print("\033[1;31mCAPTCHA incorreto.\033[0m Gerando novo...")
+                    continue
+
+                return resposta.text
+
+            except Exception as e:
+                print(f"Erro na tentativa {tentativa + 1}: {e}")
+
+        return None
+
+    def coletar_informacoes(self, pagina_html):
+        """Coleta as informações da página usando XPath"""
+        try:
+            parser = etree.HTMLParser()
+            tree = etree.fromstring(pagina_html, parser)
+            infos = []
+            for i in range(3, 6):
+                xpath = f'//*[@id="id_50123621_conteudo"]/p[{i}]'
+                elementos = tree.xpath(xpath)
+                if elementos:
+                    infos.append(elementos[0].text)
+            
+            info4 = tree.xpath('//*[@id="id_50123635_conteudo"]/p[15]')
+            if info4:
+                infos.append(info4[0].text)
+
+            return infos, pagina_html
+        except Exception as e:
+            print(f"Erro ao coletar informações: {e}")
+            return [], None
+
+    def processar(self):
+        """Executa o fluxo principal de processamento"""
+        if self.acessar_pagina():
+            pagina_html = self.acessar_pagina_com_captcha()
+            if pagina_html:
+                infos, html_completo = self.coletar_informacoes(pagina_html)
+                print("Informações coletadas:")
+                for i, info in enumerate(infos, 1):
+                    print(f"Info {i}: {info}")
+                return html_completo
+            else:
+                print("Falha em resolver o CAPTCHA repetidamente. Finalizando...")
+                return None
+        return None
+
+def main():
+    try:
+        with open('link_ids.json', 'r') as file:
+            data = json.load(file)
+            link_ids = data.get('link_ids', [])
+        
+        all_processed_data = {}
+            
+        for link_id in link_ids:
+            print(f"\nProcessando ID: {link_id}")
+            processor = PdfProcessor(link_id)
+            result = processor.processar()
+            if result:
+                all_processed_data[link_id] = result
+        
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        with open(f"todas_paginas_{timestamp}.json", "w", encoding="utf-8") as f:
+            json.dump(all_processed_data, f, ensure_ascii=False, indent=2)
+            
+    except FileNotFoundError:
+        print("Arquivo link_ids.json não encontrado!")
+    except json.JSONDecodeError:
+        print("Erro ao decodificar o arquivo JSON!")
+    except Exception as e:
+        print(f"Erro inesperado: {e}")
+
+if __name__ == "__main__":
+    main()
