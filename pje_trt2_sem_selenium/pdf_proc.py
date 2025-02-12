@@ -1,5 +1,4 @@
 import requests
-from lxml import etree
 from captcha_local_solver import solve_captcha_local
 from datetime import datetime
 import json
@@ -79,37 +78,49 @@ class PdfProcessor:
 
         return None
 
-    def coletar_informacoes(self, pagina_html):
-        """Coleta as informações da página usando XPath"""
+    def extrair_dados_especificos(self, pagina_json):
+        """Extrai dados específicos do JSON"""
+        dados = {
+            "poloAtivo": "",
+            "poloPassivo": "",
+            "classeJudicial": "",
+            "anoProcesso": "",
+            "tipoDocumento": ""
+        }
+        
         try:
-            parser = etree.HTMLParser()
-            tree = etree.fromstring(pagina_html, parser)
-            infos = []
-            for i in range(3, 6):
-                xpath = f'//*[@id="id_50123621_conteudo"]/p[{i}]'
-                elementos = tree.xpath(xpath)
-                if elementos:
-                    infos.append(elementos[0].text)
+            conteudo = json.loads(pagina_json)
             
-            info4 = tree.xpath('//*[@id="id_50123635_conteudo"]/p[15]')
-            if info4:
-                infos.append(info4[0].text)
+            dados["poloAtivo"] = ", ".join(conteudo.get("poloAtivo", []))
+            dados["poloPassivo"] = ", ".join(conteudo.get("poloPassivo", []))
+            dados["classeJudicial"] = conteudo.get("classeJudicial", "")
+            dados["anoProcesso"] = conteudo.get("anoProcesso", "")
+            dados["tipoDocumento"] = conteudo.get("tipoDocumento", "")
+                
+            return dados
+        except Exception as e:
+            print(f"Erro ao extrair dados específicos: {e}")
+            return dados
 
-            return infos, pagina_html
+    def coletar_informacoes(self, pagina_json):
+        """Coleta as informações específicas da página"""
+        try:
+            dados_especificos = self.extrair_dados_especificos(pagina_json)
+            return dados_especificos, pagina_json
         except Exception as e:
             print(f"Erro ao coletar informações: {e}")
-            return [], None
+            return {}, None
 
     def processar(self):
         """Executa o fluxo principal de processamento"""
         if self.acessar_pagina():
             pagina_html = self.acessar_pagina_com_captcha()
             if pagina_html:
-                infos, html_completo = self.coletar_informacoes(pagina_html)
+                dados_especificos, _ = self.coletar_informacoes(pagina_html)
                 print("Informações coletadas:")
-                for i, info in enumerate(infos, 1):
-                    print(f"Info {i}: {info}")
-                return html_completo
+                for chave, valor in dados_especificos.items():
+                    print(f"{chave}: {valor}")
+                return dados_especificos
             else:
                 print("Falha em resolver o CAPTCHA repetidamente. Finalizando...")
                 return None
@@ -131,7 +142,7 @@ def main():
                 all_processed_data[link_id] = result
         
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        with open(f"todas_paginas_{timestamp}.json", "w", encoding="utf-8") as f:
+        with open(f"dados_especificos_{timestamp}.json", "w", encoding="utf-8") as f:
             json.dump(all_processed_data, f, ensure_ascii=False, indent=2)
             
     except FileNotFoundError:

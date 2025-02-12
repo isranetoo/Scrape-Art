@@ -9,10 +9,9 @@ from lxml import etree
 URL_CAPTCHA = 'https://pje.trt2.jus.br/juris-backend/api/captcha'
 URL_DOCUMENTOS = 'https://pje.trt2.jus.br/juris-backend/api/documentos'
 PASTA_DOCUMENTOS = "processos"
-ARQUIVO_UNIFICADO = "processos_unificados.json"
 ARQUIVO_INFORMACOES = "informacoes_processos_completo.json"
 
-class Bot_trt2_pje_scrape:
+class Bot_trt2_pje_juris:
     def __init__(self, assunto: str, procs_por_pagina: int, max_paginas: int = 0):
         """ Classe para pesquisa de jurisprudência no TRT 2. 
 
@@ -115,7 +114,7 @@ class Bot_trt2_pje_scrape:
             for i in range(1, 5):  
                 xpath = f'//*[@id="divListaResultados"]/mat-list-item[{i}]/div/div[2]/div[1]/a'
                 link = tree.xpath(xpath)
-                if link:
+                if (link):
                     href = link[0].get('href')
                     links_processos.append(href)
             return links_processos
@@ -144,14 +143,11 @@ class Bot_trt2_pje_scrape:
             else:
                 retries += 1
 
-    def salvar_link_ids(self, arquivo_unificado, arquivo_link_ids):
+    def salvar_link_ids(self, documentos, arquivo_link_ids):
         """Extrai e salva os linkIds dos documentos em um arquivo separado"""
         try:
-            with open(arquivo_unificado, 'r', encoding='utf-8') as f:
-                dados = json.load(f)
-                
             link_ids = []
-            for doc in dados.get("documents", []):
+            for doc in documentos.get("documents", []):
                 link_id = doc.get("linkId")
                 if link_id:
                     link_ids.append(link_id)
@@ -167,13 +163,15 @@ class Bot_trt2_pje_scrape:
     def run(self):
         """Run the bot to start the session and process documents."""
         self.iniciar_sessao()
-        coletar_documentos(PASTA_DOCUMENTOS, ARQUIVO_UNIFICADO)
-        self.salvar_link_ids(ARQUIVO_UNIFICADO, "link_ids.json")
-        campos = ["sigiloso", "anoProcesso", "tipoDocumento", "instancia", "dataDistribuicao", "processo", "classeJudicial", "classeJudicialSigla", "dataPublicacao", "orgaoJulgador", "magistrado"]
-        coletar_informacoes(ARQUIVO_UNIFICADO, campos, ARQUIVO_INFORMACOES)
+        documentos_unificados = coletar_documentos(PASTA_DOCUMENTOS)
+        self.salvar_link_ids(documentos_unificados, "link_ids.json")
+        campos = ["sigiloso", "anoProcesso", "tipoDocumento", "instancia", "dataDistribuicao", 
+                 "processo", "classeJudicial", "classeJudicialSigla", "dataPublicacao", 
+                 "orgaoJulgador", "magistrado"]
+        coletar_informacoes_memoria(documentos_unificados, campos, ARQUIVO_INFORMACOES)
 
-def coletar_documentos(pasta_origem, arquivo_saida):
-    """Coleta as paginas dos processos e as unifica em um unico arquivo processos_unificados.json """
+def coletar_documentos(pasta_origem):
+    """Coleta as paginas dos processos e retorna os documentos unificados"""
     documentos_unificados = {"documents": []}
     arquivos_json = [f for f in os.listdir(pasta_origem) if f.endswith('.json')]
     for arquivo in arquivos_json:
@@ -183,20 +181,17 @@ def coletar_documentos(pasta_origem, arquivo_saida):
                 documentos_unificados["documents"].extend(conteudo.get("documents", []))
         except Exception as e:
             print(f"Erro ao processar o arquivo {arquivo}: {e}")
+    
+    print("Documentos unificados em memória")
+    return documentos_unificados
 
-    with open(arquivo_saida, 'w', encoding='utf-8') as f:
-        json.dump(documentos_unificados, f, ensure_ascii=False, indent=4)
-    print(f"Documentos unificados salvos em: \033[32m{arquivo_saida}\033[0m")
-
-def coletar_informacoes(arquivo_entrada, campos, arquivo_saida):
+def coletar_informacoes_memoria(documentos_unificados, campos, arquivo_saida):
     """
-    Coleta as informações do processos_unificados.json e as filtra em outro arquivo JSON informacoes_processos_completo.json
+    Coleta as informações dos documentos unificados em memória e as salva em arquivo JSON
     com o formato BD e valores nulos para campos ausentes.
     """
     try:
-        with open(arquivo_entrada, 'r', encoding='utf-8') as f:
-            dados = json.load(f).get("documents", [])
-
+        dados = documentos_unificados.get("documents", [])
         informacoes_completas = []
         for doc in dados:
             numero_processo = doc.get("processo", None)
@@ -354,8 +349,6 @@ def coletar_informacoes(arquivo_entrada, campos, arquivo_saida):
                         ]
                     }
                 ],
-                #"juizoDigital": doc.get("meioTramitacao", None),
-                #"segredoJustica": doc.get("sigiloso", None),
             }
             informacoes_completas.append(informacoes)
 
@@ -368,11 +361,7 @@ def coletar_informacoes(arquivo_entrada, campos, arquivo_saida):
 if __name__ == "__main__":
     procs_por_pagina = input("Digite o número de processos por página: ")
     assunto = input("Digite o assunto de interesse: ")
-    sessao = Bot_trt2_pje_scrape(assunto, procs_por_pagina)
+    sessao = Bot_trt2_pje_juris(assunto, procs_por_pagina)
     sessao.run()
 
-    coletar_documentos(PASTA_DOCUMENTOS, ARQUIVO_UNIFICADO)
-    campos = ["sigiloso", "anoProcesso", "tipoDocumento",  "instancia", "dataDistribuicao", "processo", "classeJudicial",  "classeJudicialSigla", "dataPublicacao", "orgaoJulgador", "magistrado"]
-    coletar_informacoes(ARQUIVO_UNIFICADO, campos, ARQUIVO_INFORMACOES)
 
-    
