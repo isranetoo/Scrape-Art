@@ -5,6 +5,7 @@ from datetime import datetime
 from captcha_local_solver import solve_captcha_local
 from parsing import parse_cnj
 from lxml import etree
+from pdf_proc import main as process_pdfs
 
 URL_CAPTCHA = 'https://pje.trt2.jus.br/juris-backend/api/captcha'
 URL_DOCUMENTOS = 'https://pje.trt2.jus.br/juris-backend/api/documentos'
@@ -143,32 +144,32 @@ class Bot_trt2_pje_juris:
             else:
                 retries += 1
 
-    def salvar_link_ids(self, documentos, arquivo_link_ids):
-        """Extrai e salva os linkIds dos documentos em um arquivo separado"""
+    def extrair_link_ids(self, documentos):
+        """Extrai os linkIds dos documentos"""
         try:
             link_ids = []
             for doc in documentos.get("documents", []):
                 link_id = doc.get("linkId")
                 if link_id:
                     link_ids.append(link_id)
-            
-            with open(arquivo_link_ids, 'w', encoding='utf-8') as f:
-                json.dump({"link_ids": link_ids}, f, ensure_ascii=False, indent=4)
-            print(f"LinkIds salvos em: \033[32m{arquivo_link_ids}\033[0m")
-            return True
+            return link_ids
         except Exception as e:
-            print(f"Erro ao salvar linkIds: {e}")
-            return False
+            print(f"Erro ao extrair linkIds: {e}")
+            return []
 
     def run(self):
         """Run the bot to start the session and process documents."""
         self.iniciar_sessao()
         documentos_unificados = coletar_documentos(PASTA_DOCUMENTOS)
-        self.salvar_link_ids(documentos_unificados, "link_ids.json")
+        link_ids = self.extrair_link_ids(documentos_unificados)
         campos = ["sigiloso", "anoProcesso", "tipoDocumento", "instancia", "dataDistribuicao", 
                  "processo", "classeJudicial", "classeJudicialSigla", "dataPublicacao", 
                  "orgaoJulgador", "magistrado"]
         coletar_informacoes_memoria(documentos_unificados, campos, ARQUIVO_INFORMACOES)
+        
+        print("\n\033[1;33m==== Iniciando Processamento de PDFs ====\033[0m")
+        process_pdfs(link_ids)
+        return True
 
 def coletar_documentos(pasta_origem):
     """Coleta as paginas dos processos e retorna os documentos unificados"""
@@ -197,7 +198,7 @@ def coletar_informacoes_memoria(documentos_unificados, campos, arquivo_saida):
             numero_processo = doc.get("processo", None)
             area_code, tribunal_code, vara_code, ano, area, tribunal = parse_cnj(numero_processo) if numero_processo else (None, None, None, None, None, None)
             informacoes = {
-                "linkId": doc.get("linkId", None),
+                #"linkId": doc.get("linkId", None),
                 "numero": numero_processo,
                 "area_code": area_code,
                 "tribunal_code": tribunal_code,

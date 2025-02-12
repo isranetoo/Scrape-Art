@@ -1,6 +1,5 @@
 import requests
 from captcha_local_solver import solve_captcha_local
-from datetime import datetime
 import json
 
 class PdfProcessor:
@@ -126,11 +125,11 @@ class PdfProcessor:
                 return None
         return None
 
-def main():
+def main(link_ids=None):
     try:
-        with open('link_ids.json', 'r') as file:
-            data = json.load(file)
-            link_ids = data.get('link_ids', [])
+        if link_ids is None:
+            print("Nenhum link_id fornecido para processamento!")
+            return
         
         all_processed_data = {}
             
@@ -141,14 +140,10 @@ def main():
             if result:
                 all_processed_data[link_id] = result
         
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        with open(f"dados_especificos_{timestamp}.json", "w", encoding="utf-8") as f:
+        
+        with open("dados_especificos.json", "w", encoding="utf-8") as f:
             json.dump(all_processed_data, f, ensure_ascii=False, indent=2)
             
-    except FileNotFoundError:
-        print("Arquivo link_ids.json não encontrado!")
-    except json.JSONDecodeError:
-        print("Erro ao decodificar o arquivo JSON!")
     except Exception as e:
         print(f"Erro inesperado: {e}")
 
