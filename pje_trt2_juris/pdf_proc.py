@@ -84,7 +84,8 @@ class PdfProcessor:
             "poloPassivo": "",
             "classeJudicial": "",
             "anoProcesso": "",
-            "tipoDocumento": ""
+            "tipoDocumento": "",
+            "movimentoDecisao": ""
         }
         
         try:
@@ -95,6 +96,7 @@ class PdfProcessor:
             dados["classeJudicial"] = conteudo.get("classeJudicial", "")
             dados["anoProcesso"] = conteudo.get("anoProcesso", "")
             dados["tipoDocumento"] = conteudo.get("tipoDocumento", "")
+            dados["movimentoDecisao"] = conteudo.get("movimentoDecisao", "")
                 
             return dados
         except Exception as e:

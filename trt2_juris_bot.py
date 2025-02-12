@@ -2,11 +2,10 @@ import requests
 import json
 import os
 from datetime import datetime
-from captcha_local_solver import solve_captcha_local
-from parsing import parse_cnj
+from pje_trt2_juris.captcha_local_solver import solve_captcha_local
+from pje_trt2_juris.parsing import parse_cnj
 from lxml import etree
 
-# Constants
 URL_CAPTCHA = 'https://pje.trt2.jus.br/juris-backend/api/captcha'
 URL_DOCUMENTOS = 'https://pje.trt2.jus.br/juris-backend/api/documentos'
 PASTA_DOCUMENTOS = "processos"
@@ -118,13 +117,7 @@ class Bot_trt2_pje_juris(BasePJEProcessor):
         except Exception as e:
             print(f"Erro ao processar a página {pagina}: {e}")
         return False
-
-    # ... rest of Bot_trt2_pje_juris methods remain the same ...
-    # (Including: salvar_em_arquivo, coletar_links_processos, iniciar_sessao, 
-    #  salvar_link_ids, run, etc.)
-
-# ... rest of helper functions remain the same ...
-# (Including: coletar_documentos, coletar_informacoes_memoria)
+    
 
 def process_documents():
     """Process specific documents using link IDs"""

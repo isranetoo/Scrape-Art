@@ -1,0 +1,304 @@
+import requests
+from captcha_local_solver import solve_captcha_local
+import json
+
+class PdfProcessor:
+    def __init__(self, link_id):
+        self.URL_CAPTCHA = 'https://pje.trt2.jus.br/juris-backend/api/captcha'
+        self.URL_PAGE = f'https://pje.trt2.jus.br/juris-backend/api/documentos/{link_id}'
+        self.sessao = requests.Session()
+        self.token_desafio = None
+        self.resposta_captcha = None
+        self.cookies = {}
+
+    def fazer_requisicao_captcha(self):
+        """Fazer a requisicao do captcha para ser resolvido (GET)"""
+        try:
+            resposta = self.sessao.get(self.URL_CAPTCHA, headers={'Accept': 'application/json'})
+            resposta.raise_for_status()
+            dados = resposta.json()
+            self.token_desafio = dados.get('tokenDesafio')
+            self.resolver_captcha(dados.get('imagem'))
+            return True
+        except Exception as e:
+            print(f"Erro ao obter o CAPTCHA: {e}")
+            return False
+
+    def resolver_captcha(self, base64_string):
+        """Resolve o CAPTCHA usando o solver local"""
+        try:
+            if base64_string:
+                base64_string = base64_string.split(',')[1] if base64_string.startswith('data:image') else base64_string
+                self.resposta_captcha = solve_captcha_local(base64_string)
+                print(f"Resposta do CAPTCHA: \033[1;32m{self.resposta_captcha}\033[0m")
+                self.configurar_cookies()
+        except Exception as e:
+            print(f"Erro ao resolver o CAPTCHA: {e}")
+
+    def configurar_cookies(self):
+        """Configura os cookies da sessão"""
+        self.cookies = {
+            "_ga": "GA1.3.2135935613.1731417901",
+            "respostaDesafio": self.resposta_captcha,
+            "tokenDesafio": self.token_desafio,
+        }
+        self.sessao.cookies.update(self.cookies)
+
+    def acessar_pagina(self):
+        """Acessa a página inicial"""
+        try:
+            resposta = self.sessao.post(self.URL_PAGE)
+            resposta.raise_for_status()
+            return True
+        except Exception as e:
+            print(f"Erro ao acessar a página inicial: {e}")
+            return False
+
+    def acessar_pagina_com_captcha(self):
+        """Acessa a página protegida pelo CAPTCHA"""
+        max_tentativas = 10
+        for tentativa in range(max_tentativas):
+            if not self.fazer_requisicao_captcha():
+                continue
+
+            try:
+                url_post = f"{self.URL_PAGE}?tokenDesafio={self.token_desafio}&resposta={self.resposta_captcha}"
+                resposta = self.sessao.post(url_post)
+                resposta.raise_for_status()
+
+                if "A resposta informada é incorreta" in resposta.text:
+                    print("\033[1;31mCAPTCHA incorreto.\033[0m Gerando novo...")
+                    continue
+
+                return resposta.text
+
+            except Exception as e:
+                print(f"Erro na tentativa {tentativa + 1}: {e}")
+
+        return None
+
+    def extrair_dados_especificos(self, pagina_json):
+        """Extrai e formata os dados do JSON conforme especificação"""
+        try:
+            doc = json.loads(pagina_json)
+            
+            # Extrair número do processo e seus componentes
+            numero_processo = doc.get("numeroProcesso", "")
+            componentes = numero_processo.split("-")
+            if len(componentes) >= 4:
+                area_code = componentes[0]
+                tribunal_code = componentes[1]
+                vara_code = componentes[2]
+                ano = componentes[3]
+            else:
+                area_code = tribunal_code = vara_code = ano = None
+
+            area = "Trabalhista"
+            tribunal = "TRT2"
+            
+            informacoes = {
+                "numero": numero_processo,
+                "area_code": area_code,
+                "tribunal_code": tribunal_code,
+                "vara_code": vara_code,
+                "ano": ano,
+                "area": area,
+                "tribunal": tribunal,
+                "comarca": None,
+                "valor_causa": doc.get("valorCausa", None),
+                "moeda_causa": "R$",
+                "fontes": [
+                    {
+                        "provider": "Interno",
+                        "provider_fonte_id": "Interno",
+                        "sigla": doc.get("sistema", "PJE-TRT2"),
+                        "sistema": "PJE",
+                        "tipo": "TRIBUNAL",
+                        "instancias": [
+                            {
+                                "url": "https://pje.trt2.jus.br/jurisprudencia/",
+                                "grau": doc.get("instancia", None),
+                                "classe": doc.get("classeJudicialSigla", None),
+                                "orgao_julgador": doc.get("orgaoJulgador", None),
+                                "justica_gratuita": doc.get("justicaGratuita", None),
+                                "assunto_principal": doc.get("assunto", [None])[0],
+                                "assuntos": doc.get("assunto", []),
+                                "envolvidos": [
+                                    {
+                                        "nome": doc.get("poloAtivo", [None])[0] if isinstance(doc.get("poloAtivo"), list) else doc.get("poloAtivo"),
+                                        "tipo": "RECLAMANTE",
+                                        "polo": "ATIVO",
+                                        "id_sistema": {"login": None},
+                                        "documento": [{"tipo": "CPF", "uf": None, "valor": None}],
+                                        "endereco": {},
+                                        "representantes": [
+                                            {
+                                                "nome": doc.get("nome_adv", None),
+                                                "tipo": "ADVOGADO",
+                                                "polo": "ATIVO",
+                                                "id_sistema": {"login": None},
+                                                "documento": [
+                                                    {"tipo": "CPF", "uf": None, "valor": doc.get("cpf", None)},
+                                                    {"tipo": "RG", "uf": None, "valor": None},
+                                                    {"tipo": "OAB-ADVOGADO", "uf": None, "valor": None}
+                                                ],
+                                                "endereco": {
+                                                    "logradouro": doc.get("longradouro", None),
+                                                    "numero": doc.get("numero", None),
+                                                    "complemento": doc.get("complemento", None),
+                                                    "bairro": doc.get("bairro", None),
+                                                    "municipio": doc.get("municipio", None),
+                                                    "estado": doc.get("estado", None),
+                                                    "cep": doc.get("cep", None),
+                                                }
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "nome": doc.get("poloPassivo", [None])[0] if isinstance(doc.get("poloPassivo"), list) else doc.get("poloPassivo"),
+                                        "tipo": "RECLAMADO",
+                                        "polo": "PASSIVO",
+                                        "id_sistema": {"login": None},
+                                        "documento": [{"tipo": "CPF", "uf": None, "valor": None}],
+                                        "endereco": {},
+                                        "representantes": [
+                                            {
+                                                "nome": doc.get("nome_adv", None),
+                                                "tipo": "ADVOGADO",
+                                                "polo": "PASSIVO",
+                                                "id_sistema": {"login": None},
+                                                "documento": [
+                                                    {"tipo": "CPF", "uf": None, "valor": None},
+                                                    {"tipo": "RG", "uf": None, "valor": None},
+                                                    {"tipo": "OAB-ADVOGADO", "uf": None, "valor": None}
+                                                ],
+                                                "endereco": {
+                                                    "logradouro": None,
+                                                    "numero": None,
+                                                    "complemento": None,
+                                                    "bairro": None,
+                                                    "municipio": None,
+                                                    "estado": None,
+                                                    "cep": None
+                                                }
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "nome": doc.get("nome_perito", None),
+                                        "tipo": "PERITO",
+                                        "polo": "OUTROS",
+                                        "id_sistema": {"login": None},
+                                        "documento": [],
+                                        "endereco": {},
+                                        "representantes": []
+                                    }
+                                ],
+                                "movimentacoes": self._formatar_movimentacoes(doc)
+                            }
+                        ]
+                    }
+                ]
+            }
+            
+            return informacoes
+        except Exception as e:
+            print(f"Erro ao extrair dados específicos: {e}")
+            return {}
+
+    def _formatar_movimentacoes(self, doc):
+        """Formata as movimentações do processo"""
+        movimentacoes = []
+        
+        # Adiciona movimentação de decisão
+        if doc.get("movimentoDecisao"):
+            movimentacoes.append({
+                "titulo": doc.get("movimentoDecisao"),
+                "tipoConteudo": doc.get("html"),
+                "data": doc.get("dataPublicacao"),
+                "ativo": doc.get("ativo"),
+                "documento": doc.get("f_ou_t"),
+                "mostrarHeaderData": doc.get("header_data"),
+                "usuarioCriador": doc.get("usuarioCriador"),
+            })
+        
+        # Adiciona movimentação geral
+        if doc.get("titulo"):
+            movimentacoes.append({
+                "titulo": doc.get("titulo"),
+                "tipoConteudo": doc.get("html"),
+                "data": doc.get("dataPublicacao"),
+                "ativo": doc.get("ativo"),
+                "documento": doc.get("f_ou_t"),
+                "mostrarHeaderData": doc.get("header_data"),
+                "usuarioCriador": doc.get("usuarioCriador"),
+            })
+        
+        # Adiciona documento
+        movimentacoes.append({
+            "id": doc.get("id"),
+            "idUnicoDocumento": doc.get("idUnicoDocumento"),
+            "titulo": doc.get("titulo"),
+            "tipo": doc.get("tipoDocumento"),
+            "tipoConteudo": doc.get("tipoConteudo", "RTF"),
+            "data": doc.get("dataPublicacao"),
+            "ativo": doc.get("ativo"),
+            "documentoSigiloso": doc.get("sigiloso"),
+            "usuarioPerito": doc.get("usuarioPerito"),
+            "documento": doc.get("tipo_doc"),
+            "publico": doc.get("tipo_publico"),
+            "usuarioJuntada": doc.get("usuarioJuntada"),
+            "usuarioCriador": doc.get("usuarioCriador"),
+            "instancia": doc.get("instancia")
+        })
+        
+        return movimentacoes
+
+    def coletar_informacoes(self, pagina_json):
+        """Coleta as informações específicas da página"""
+        try:
+            dados_especificos = self.extrair_dados_especificos(pagina_json)
+            return dados_especificos, pagina_json
+        except Exception as e:
+            print(f"Erro ao coletar informações: {e}")
+            return {}, None
+
+    def processar(self):
+        """Executa o fluxo principal de processamento"""
+        if self.acessar_pagina():
+            pagina_html = self.acessar_pagina_com_captcha()
+            if pagina_html:
+                dados_especificos, _ = self.coletar_informacoes(pagina_html)
+                print("Informações coletadas:")
+                for chave, valor in dados_especificos.items():
+                    print(f"{chave}: {valor}")
+                return dados_especificos
+            else:
+                print("Falha em resolver o CAPTCHA repetidamente. Finalizando...")
+                return None
+        return None
+
+def main(link_ids=None):
+    try:
+        if link_ids is None:
+            print("Nenhum link_id fornecido para processamento!")
+            return
+        
+        all_processed_data = {}
+            
+        for link_id in link_ids:
+            print(f"\nProcessando ID: {link_id}")
+            processor = PdfProcessor(link_id)
+            result = processor.processar()
+            if result:
+                all_processed_data[link_id] = result
+        
+        
+        with open("dados_especificos.json", "w", encoding="utf-8") as f:
+            json.dump(all_processed_data, f, ensure_ascii=False, indent=2)
+            
+    except Exception as e:
+        print(f"Erro inesperado: {e}")
+
+if __name__ == "__main__":
+    main()

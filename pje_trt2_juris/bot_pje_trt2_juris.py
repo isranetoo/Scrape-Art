@@ -186,6 +186,15 @@ def coletar_documentos(pasta_origem):
     print("Documentos unificados em memória")
     return documentos_unificados
 
+def ler_dados_especificos():
+    """Lê o arquivo dados_especificos.json e retorna seus dados"""
+    try:
+        with open('dados_especificos.json', 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except Exception as e:
+        print(f"Erro ao ler dados_especificos.json: {e}")
+        return {}
+
 def coletar_informacoes_memoria(documentos_unificados, campos, arquivo_saida):
     """
     Coleta as informações dos documentos unificados em memória e as salva em arquivo JSON
@@ -194,6 +203,8 @@ def coletar_informacoes_memoria(documentos_unificados, campos, arquivo_saida):
     try:
         dados = documentos_unificados.get("documents", [])
         informacoes_completas = []
+        dados_especificos = ler_dados_especificos()
+
         for doc in dados:
             numero_processo = doc.get("processo", None)
             area_code, tribunal_code, vara_code, ano, area, tribunal = parse_cnj(numero_processo) if numero_processo else (None, None, None, None, None, None)
@@ -351,6 +362,33 @@ def coletar_informacoes_memoria(documentos_unificados, campos, arquivo_saida):
                     }
                 ],
             }
+
+            # Mapeamento de campos do dados_especificos.json para informacoes_completas
+            if numero_processo in dados_especificos:
+                dados_proc = dados_especificos[numero_processo]
+                
+                # Atualiza os envolvidos com os dados específicos
+                for envolvido in informacoes["fontes"][0]["provider"]["instancias"][0]["envolvidos"]:
+                    if envolvido["polo"] == "ATIVO" and "poloAtivo" in dados_proc:
+                        envolvido["nome"] = dados_proc["poloAtivo"]
+                    elif envolvido["polo"] == "PASSIVO" and "poloPassivo" in dados_proc:
+                        envolvido["nome"] = dados_proc["poloPassivo"]
+                    
+                    # Atualiza documentos se disponíveis
+                    if "documentos" in dados_proc:
+                        if envolvido["polo"] == "ATIVO" and "cpf_ativo" in dados_proc["documentos"]:
+                            envolvido["documento"][0]["valor"] = dados_proc["documentos"]["cpf_ativo"]
+                        elif envolvido["polo"] == "PASSIVO" and "cpf_passivo" in dados_proc["documentos"]:
+                            envolvido["documento"][0]["valor"] = dados_proc["documentos"]["cpf_passivo"]
+
+                    # Atualiza representantes se disponíveis
+                    for representante in envolvido.get("representantes", []):
+                        if representante["tipo"] == "ADVOGADO":
+                            if envolvido["polo"] == "ATIVO" and "advogado_ativo" in dados_proc:
+                                representante["nome"] = dados_proc["advogado_ativo"]
+                            elif envolvido["polo"] == "PASSIVO" and "advogado_passivo" in dados_proc:
+                                representante["nome"] = dados_proc["advogado_passivo"]
+
             informacoes_completas.append(informacoes)
 
         with open(arquivo_saida, 'w', encoding='utf-8') as f:
