@@ -5,7 +5,7 @@ from datetime import datetime
 from captcha_local_solver import solve_captcha_local
 from parsing import parse_cnj
 from lxml import etree
-from pdf_proc import main as process_pdfs
+from pdf_proc import main as process_pdfs, merge_json_files
 
 URL_CAPTCHA = 'https://pje.trt2.jus.br/juris-backend/api/captcha'
 URL_DOCUMENTOS = 'https://pje.trt2.jus.br/juris-backend/api/documentos'
@@ -49,7 +49,7 @@ class Bot_trt2_pje_juris:
     def resolver_captcha(self, base64_string):
         """Resolve o CAPTCHA com o solver_captcha_local"""
         try:
-            if base64_string:
+            if (base64_string):
                 base64_string = base64_string.split(',')[1] if base64_string.startswith('data:image') else base64_string
                 self.resposta_captcha = solve_captcha_local(base64_string)
                 print(f"Resposta do CAPTCHA: \033[1;32m{self.resposta_captcha}\033[0m")
@@ -169,6 +169,10 @@ class Bot_trt2_pje_juris:
         
         print("\n\033[1;33m==== Iniciando Processamento de PDFs ====\033[0m")
         process_pdfs(link_ids)
+        
+        print("\n\033[1;33m==== Mesclando Arquivos JSON ====\033[0m")
+        merge_json_files()
+        
         return True
 
 def coletar_documentos(pasta_origem):
@@ -209,7 +213,7 @@ def coletar_informacoes_memoria(documentos_unificados, campos, arquivo_saida):
             numero_processo = doc.get("processo", None)
             area_code, tribunal_code, vara_code, ano, area, tribunal = parse_cnj(numero_processo) if numero_processo else (None, None, None, None, None, None)
             informacoes = {
-                #"linkId": doc.get("linkId", None),
+                "linkId": doc.get("linkId", None),
                 "numero": numero_processo,
                 "area_code": area_code,
                 "tribunal_code": tribunal_code,

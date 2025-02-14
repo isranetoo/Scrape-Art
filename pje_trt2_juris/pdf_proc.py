@@ -127,6 +127,53 @@ class PdfProcessor:
                 return None
         return None
 
+def atualizar_informacoes_completas(dados_especificos):
+    try:
+        with open(r"c:\Users\IsraelAntunes\OneDrive\pje_trt2\informacoes_processos_completo.json", "r", encoding="utf-8") as f:
+            informacoes_completas = json.load(f)
+        
+        for processo in informacoes_completas:
+            numero_processo = processo["numero"]
+            if numero_processo in dados_especificos:
+                dados = dados_especificos[numero_processo]
+                processo["poloAtivo"] = dados.get("poloAtivo", "")
+                processo["poloPassivo"] = dados.get("poloPassivo", "")
+                processo["classeJudicial"] = dados.get("classeJudicial", "")
+                processo["anoProcesso"] = dados.get("anoProcesso", "")
+                processo["tipoDocumento"] = dados.get("tipoDocumento", "")
+                processo["movimentoDecisao"] = dados.get("movimentoDecisao", "")
+        
+        with open(r"c:\Users\IsraelAntunes\OneDrive\pje_trt2\informacoes_processos_completo.json", "w", encoding="utf-8") as f:
+            json.dump(informacoes_completas, f, ensure_ascii=False, indent=2)
+            
+    except Exception as e:
+        print(f"Erro ao atualizar informacoes_processos_completo.json: {e}")
+
+def merge_json_files():
+    try:
+        print("Carregando informacoes_processos_completo.json...")
+        with open(r"c:\Users\IsraelAntunes\OneDrive\pje_trt2\informacoes_processos_completo.json", "r", encoding="utf-8") as f:
+            informacoes_completas = json.load(f)
+        
+        print("Carregando dados_especificos.json...")
+        with open(r"c:\Users\IsraelAntunes\OneDrive\pje_trt2\dados_especificos.json", "r", encoding="utf-8") as f:
+            dados_especificos = json.load(f)
+        
+        print("Mesclando dados...")
+        for processo in informacoes_completas:
+            link_id = processo.get("linkId")
+            if link_id and link_id in dados_especificos:
+                dados = dados_especificos[link_id]
+                processo.update(dados)
+        
+        print("Salvando informacoes_processos_completo.json...")
+        with open(r"c:\Users\IsraelAntunes\OneDrive\pje_trt2\informacoes_processos_completo.json", "w", encoding="utf-8") as f:
+            json.dump(informacoes_completas, f, ensure_ascii=False, indent=2)
+        
+        print("Arquivos JSON mesclados com sucesso.")
+    except Exception as e:
+        print(f"Erro ao mesclar arquivos JSON: {e}")
+
 def main(link_ids=None):
     try:
         if link_ids is None:
@@ -142,12 +189,14 @@ def main(link_ids=None):
             if result:
                 all_processed_data[link_id] = result
         
-        
-        with open("dados_especificos.json", "w", encoding="utf-8") as f:
+        with open(r"c:\Users\IsraelAntunes\OneDrive\pje_trt2\dados_especificos.json", "w", encoding="utf-8") as f:
             json.dump(all_processed_data, f, ensure_ascii=False, indent=2)
+        
+        atualizar_informacoes_completas(all_processed_data)
             
     except Exception as e:
         print(f"Erro inesperado: {e}")
 
 if __name__ == "__main__":
     main()
+    merge_json_files()
