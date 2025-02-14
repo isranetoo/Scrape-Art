@@ -27,7 +27,7 @@ class PdfProcessor:
     def resolver_captcha(self, base64_string):
         """Resolve o CAPTCHA usando o solver local"""
         try:
-            if base64_string:
+            if (base64_string):
                 base64_string = base64_string.split(',')[1] if base64_string.startswith('data:image') else base64_string
                 self.resposta_captcha = solve_captcha_local(base64_string)
                 print(f"Resposta do CAPTCHA: \033[1;32m{self.resposta_captcha}\033[0m")
@@ -80,23 +80,23 @@ class PdfProcessor:
     def extrair_dados_especificos(self, pagina_json):
         """Extrai dados específicos do JSON"""
         dados = {
-            "poloAtivo": "",
+            "nome": [],
             "poloPassivo": "",
             "classeJudicial": "",
             "anoProcesso": "",
             "tipoDocumento": "",
-            "movimentoDecisao": ""
+            "movimentoDecisao": []
         }
         
         try:
             conteudo = json.loads(pagina_json)
             
-            dados["poloAtivo"] = ", ".join(conteudo.get("poloAtivo", []))
+            dados["nome"] = conteudo.get("poloAtivo", [])
             dados["poloPassivo"] = ", ".join(conteudo.get("poloPassivo", []))
             dados["classeJudicial"] = conteudo.get("classeJudicial", "")
             dados["anoProcesso"] = conteudo.get("anoProcesso", "")
             dados["tipoDocumento"] = conteudo.get("tipoDocumento", "")
-            dados["movimentoDecisao"] = conteudo.get("movimentoDecisao", "")
+            dados["movimentoDecisao"] = conteudo.get("movimentoDecisao", [])
                 
             return dados
         except Exception as e:

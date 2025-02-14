@@ -242,7 +242,7 @@ def coletar_informacoes_memoria(documentos_unificados, campos, arquivo_saida):
                                 "assuntos": doc.get("assunto", []),
                                 "envolvidos": [
                                     {
-                                        "nome": doc.get("poloAtivo", None),
+                                        "nome": doc.get("poloAtivo", []),
                                         "tipo": doc.get("reclamante", "RECLAMANTE"),
                                         "polo": doc.get("polo", "ATIVO"),
                                         "id_sistema": {
@@ -278,7 +278,7 @@ def coletar_informacoes_memoria(documentos_unificados, campos, arquivo_saida):
                                         ]
                                     },
                                     {
-                                        "nome": doc.get("poloPassivo", None), 
+                                        "nome": doc.get("poloPassivo", []), 
                                         "tipo": doc.get("reclamado", "RECLAMADO"),
                                         "polo": doc.get("polo", "PASSIVO"),
                                         "id_sistema": {
@@ -324,47 +324,53 @@ def coletar_informacoes_memoria(documentos_unificados, campos, arquivo_saida):
                                         "endereco": {},
                                         "representantes": []
                                     }
-                            ],
-                            "movimentacoes": doc.get("movimentacoes", [
-                                {
-                                    "titulo": doc.get("movimentoDecisao", None),
-                                    "tipoConteudo": doc.get("html", None),
-                                    "data": doc.get("dataPublicacao", None),
-                                    "ativo": doc.get("ativo", None),
-                                    "documento": doc.get("f_ou_t", None),
-                                    "mostrarHeaderData": doc.get("header_data", None),
-                                    "usuarioCriador": doc.get("usuarioCriador", None),
-                                },
-                                {
-                                    "titulo": doc.get("titulo", None),
-                                    "tipoConteudo": doc.get("html", None),
-                                    "data": doc.get("dataPublicacao", None),
-                                    "ativo": doc.get("ativo", None),
-                                    "documento": doc.get("f_ou_t", None),
-                                    "mostrarHeaderData": doc.get("header_data", None),
-                                    "usuarioCriador": doc.get("usuarioCriador", None),
-                                },
-                                {
-                                    "id": doc.get("id", None),
-                                    "idUnicoDocumento": doc.get("idUnicoDocumento", None),
-                                    "titulo": doc.get("titulo", None),
-                                    "tipo": doc.get("tipoDocumento", None),
-                                    "tipoConteudo": doc.get("tipoConteudo","RTF"),
-                                    "data": doc.get("dataPublicacao", None),
-                                    "ativo": doc.get("ativo", None),
-                                    "documentoSigiloso": doc.get("sigiloso", None),
-                                    "usuarioPerito": doc.get("usuarioPerito", None),
-                                    "documento": doc.get("tipo_doc", None),
-                                    "publico": doc.get("tipo_publico", None),
-                                    "usuarioJuntada": doc.get("usuarioJuntada", None),
-                                    "usuarioCriador": doc.get("usuarioCriador", None),
-                                    "instancia": doc.get("instancia", None)
-                                }
-                            ])
+                                ],
+                                "movimentacoes": doc.get("movimentacoes", [
+                                    {
+                                        "titulo": doc.get("movimentoDecisao", []),
+                                        "tipoConteudo": doc.get("html", None),
+                                        "data": doc.get("dataPublicacao", None),
+                                        "ativo": doc.get("ativo", None),
+                                        "documento": doc.get("f_ou_t", None),
+                                        "mostrarHeaderData": doc.get("header_data", None),
+                                        "usuarioCriador": doc.get("usuarioCriador", None),
+                                    },
+                                    {
+                                        "titulo": doc.get("titulo", None),
+                                        "tipoConteudo": doc.get("html", None),
+                                        "data": doc.get("dataPublicacao", None),
+                                        "ativo": doc.get("ativo", None),
+                                        "documento": doc.get("f_ou_t", None),
+                                        "mostrarHeaderData": doc.get("header_data", None),
+                                        "usuarioCriador": doc.get("usuarioCriador", None),
+                                    },
+                                    {
+                                        "id": doc.get("id", None),
+                                        "idUnicoDocumento": doc.get("idUnicoDocumento", None),
+                                        "titulo": doc.get("titulo", None),
+                                        "tipo": doc.get("tipoDocumento", None),
+                                        "tipoConteudo": doc.get("tipoConteudo","RTF"),
+                                        "data": doc.get("dataPublicacao", None),
+                                        "ativo": doc.get("ativo", None),
+                                        "documentoSigiloso": doc.get("sigiloso", None),
+                                        "usuarioPerito": doc.get("usuarioPerito", None),
+                                        "documento": doc.get("tipo_doc", None),
+                                        "publico": doc.get("tipo_publico", None),
+                                        "usuarioJuntada": doc.get("usuarioJuntada", None),
+                                        "usuarioCriador": doc.get("usuarioCriador", None),
+                                        "instancia": doc.get("instancia", None)
+                                    }
+                                ])
                             }
                         ]
                     }
                 ],
+                "nome": doc.get("poloAtivo", []),
+                "poloPassivo": ", ".join(doc.get("poloPassivo", [])),
+                "classeJudicial": doc.get("classeJudicial", ""),
+                "anoProcesso": doc.get("anoProcesso", ""),
+                "tipoDocumento": doc.get("tipoDocumento", ""),
+                "movimentoDecisao": doc.get("movimentoDecisao", [])
             }
 
             # Mapeamento de campos do dados_especificos.json para informacoes_completas
@@ -372,11 +378,11 @@ def coletar_informacoes_memoria(documentos_unificados, campos, arquivo_saida):
                 dados_proc = dados_especificos[numero_processo]
                 
                 # Atualiza os envolvidos com os dados específicos
-                for envolvido in informacoes["fontes"][0]["provider"]["instancias"][0]["envolvidos"]:
+                for envolvido in informacoes["fontes"][0]["instancias"][0]["envolvidos"]:
                     if envolvido["polo"] == "ATIVO" and "poloAtivo" in dados_proc:
-                        envolvido["nome"] = dados_proc["poloAtivo"]
+                        envolvido["nome"] = [dados_proc["poloAtivo"]]
                     elif envolvido["polo"] == "PASSIVO" and "poloPassivo" in dados_proc:
-                        envolvido["nome"] = dados_proc["poloPassivo"]
+                        envolvido["nome"] = [dados_proc["poloPassivo"]]
                     
                     # Atualiza documentos se disponíveis
                     if "documentos" in dados_proc:
